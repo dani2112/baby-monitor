@@ -1,0 +1,16 @@
+-Audio Überwachung
+	-Threshold
+	-Treshold und Frequenz und Dauer
+	-AI?
+		
+-Audio Stream
+	-Auf anderes Gerät streamen
+	-Webinterface bereitstellen auf dem Audiostream auch gehört werden kann
+	
+-Gegensprechen
+
+-Musik abspielen	
+
+-Bewegungsüberwachung
+	-Keine Bewegung bzw. Änderung in Muster -> Alarm
+	-Flugmodus wäre hier notwendig da Gerät zuviel strahlt ?!
