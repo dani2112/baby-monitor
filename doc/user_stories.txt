@@ -1,0 +1,17 @@
+As user i want to be informed about noise of the baby.
+As user i want to hear the current microphone input on another android device.
+As user i want to hear the current microphone input in a webbrowser.
+As user i want to speak with the baby over another android device.
+As user i want to speak with the baby over the webbrowser.
+As user i want to see a history of recent events on another Android device.
+As user i want to see a history of recent events in the webbrowser.
+As user i want to see a visualisation of the current and recent noise on another Android device.
+As user i want to see a visualisation of the current and recent noise in the webbrowser.
+As user i want to configure the device to play music automatically to the child.
+As user i want to be able to start the playing of music manually for example when child cries (Android App and Browser).
+As user i want to be able to configure a phone number that can be called when child cries and no other app is connected.
+As user i want to be able to be informed about abnormal movement of the baby.
+As user i want to be able to see visualisation of current and recent movement of the baby.
+As user i want to be able to use a safe connection to ensure sufficient privacy.
+As user i want to see the current battery state on another android device and get warned in case of empty battery.
+As user i want to see the current battery state in a webbrowser and get warned in case of empty battery.
