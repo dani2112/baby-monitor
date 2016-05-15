@@ -9,7 +9,11 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import de.dk_s.babymonitor.monitoring.MonitoringService;
+
 public class MainActivity extends AppCompatActivity {
+
+    private MonitoringService monitoringService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +30,10 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+
+        monitoringService = new MonitoringService();
+        monitoringService.startMonitoring();
+
     }
 
     @Override
