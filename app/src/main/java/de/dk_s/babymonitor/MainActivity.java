@@ -39,13 +39,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         micRecorder = new MicRecorder();
+        micRecorder.enableDownsampling(true);
         micRecorder.startRecording();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        micRecorder.stopRecording();
     }
 
     @Override

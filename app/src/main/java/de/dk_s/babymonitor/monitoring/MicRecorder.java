@@ -14,6 +14,11 @@ import java.util.concurrent.Executors;
  */
 public class MicRecorder extends Observable {
 
+    /* Load native library */
+    static {
+        System.loadLibrary("babymonitor");
+    }
+
     public static class AudioChunk {
 
         private long timeStamp;
@@ -52,9 +57,17 @@ public class MicRecorder extends Observable {
             while(isRecordingRunning) {
                 short[] audioData = new short[chunkSize];
                 long timeStamp = System.currentTimeMillis();
+                AudioChunk audioChunk;
                 audioRecord.read(audioData, 0, audioData.length);
+                if(isDownsamplingEnabled) {
+                    byte[] audioDataBytes = new byte[audioData.length];
+                    downsample16To8Bit(audioData, audioDataBytes, audioData.length);
+                    audioChunk = new AudioChunk(timeStamp, audioDataBytes);
+                } else {
+                    audioChunk = new AudioChunk(timeStamp, audioData);
+                }
                 setChanged();
-                notifyObservers(new AudioChunk(timeStamp, audioData));
+                notifyObservers(audioChunk);
             }
 
             audioRecord.stop();
@@ -78,6 +91,8 @@ public class MicRecorder extends Observable {
     /* The sampling rate used for recording */
     private final int samplingRate = 44100; // Only sampling rate that is supported on all phones
 
+    /* Flag that indicates if downsampling is enabled */
+    private boolean isDownsamplingEnabled = false;
 
     public void startRecording() {
         if(isRecordingRunning) {
@@ -103,7 +118,11 @@ public class MicRecorder extends Observable {
         recordingExecutorService.shutdown();
     }
 
-    public native void testNdk();
+    public void enableDownsampling(boolean enableDownsampling) {
+        isDownsamplingEnabled = enableDownsampling;
+    }
+
+    public native void downsample16To8Bit(short[] inputData, byte[] outputData, int elementCount);
 
 
 }
