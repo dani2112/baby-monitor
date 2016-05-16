@@ -5,7 +5,16 @@ import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
+import android.net.rtp.AudioGroup;
+import android.net.rtp.AudioStream;
+import android.net.rtp.RtpStream;
 import android.util.Log;
+
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
 
 public class MonitoringService {
 
@@ -42,6 +51,15 @@ public class MonitoringService {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
+//                try {
+//                    AudioStream stream = new AudioStream(InetAddress.getByName(getLocalIpAddress()));
+//                    AudioGroup audioGroup = new AudioGroup();
+//                    stream.join(audioGroup);
+//                } catch (SocketException e) {
+//                    e.printStackTrace();
+//                } catch (UnknownHostException e) {
+//                    e.printStackTrace();
+//                }
                 int i2 = 0;
                 Log.e(TAG, "PLAY");
                 while(i2 < 20) {
@@ -60,7 +78,22 @@ public class MonitoringService {
     }
 
 
-
+    public String getLocalIpAddress() {
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+                NetworkInterface intf = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress()) {
+                        return inetAddress.getHostAddress();
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            Log.e(TAG, ex.toString());
+        }
+        return null;
+    }
 
 
 }

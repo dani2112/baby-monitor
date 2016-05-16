@@ -5,15 +5,22 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.util.Observable;
+import java.util.Observer;
+
+import de.dk_s.babymonitor.monitoring.MicRecorder;
 import de.dk_s.babymonitor.monitoring.MonitoringService;
 
 public class MainActivity extends AppCompatActivity {
 
-    private MonitoringService monitoringService;
+    private static final String TAG = "MainActivity";
+
+    private MicRecorder micRecorder = new MicRecorder();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,9 +38,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        monitoringService = new MonitoringService();
-        monitoringService.startMonitoring();
-
+        micRecorder = new MicRecorder();
+        micRecorder.startRecording();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        micRecorder.stopRecording();
     }
 
     @Override
