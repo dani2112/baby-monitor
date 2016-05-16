@@ -18,13 +18,19 @@ public class MicRecorder extends Observable {
 
         private long timeStamp;
 
-        private byte[] chunkData;
+        private byte[] chunkData8Bit;
+
+        private short[] chunkData16Bit;
 
         public AudioChunk(long timeStamp, byte[] chunkData) {
             this.timeStamp = timeStamp;
-            this.chunkData = chunkData;
+            this.chunkData8Bit = chunkData;
         }
 
+        public AudioChunk(long timeStamp, short[] chunkData) {
+            this.timeStamp = timeStamp;
+            this.chunkData16Bit = chunkData;
+        }
     }
 
     private class RecordingRunnable implements Runnable {
@@ -40,15 +46,15 @@ public class MicRecorder extends Observable {
 
         @Override
         public void run() {
-
             AudioRecord audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, 44100, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, recordingBufferSize);
             audioRecord.startRecording();
 
             while(isRecordingRunning) {
                 short[] audioData = new short[chunkSize];
+                long timeStamp = System.currentTimeMillis();
                 audioRecord.read(audioData, 0, audioData.length);
                 setChanged();
-                notifyObservers(audioData);
+                notifyObservers(new AudioChunk(timeStamp, audioData));
             }
 
             audioRecord.stop();
