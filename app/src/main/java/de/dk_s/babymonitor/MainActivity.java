@@ -15,12 +15,15 @@ import java.util.Observer;
 
 import de.dk_s.babymonitor.monitoring.MicRecorder;
 import de.dk_s.babymonitor.monitoring.MonitoringService;
+import de.dk_s.babymonitor.monitoring.WsSoundServer;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
-    private MicRecorder micRecorder = new MicRecorder();
+    private MicRecorder micRecorder;
+
+    private WsSoundServer wsSoundServer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +44,9 @@ public class MainActivity extends AppCompatActivity {
         micRecorder = new MicRecorder();
         micRecorder.enableDownsampling(true);
         micRecorder.startRecording();
+
+        wsSoundServer = new WsSoundServer();
+        wsSoundServer.startServer();
     }
 
     @Override
