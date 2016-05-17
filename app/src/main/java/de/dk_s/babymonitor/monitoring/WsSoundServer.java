@@ -10,6 +10,7 @@ import java.io.Reader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -49,7 +50,10 @@ public class WsSoundServer {
         private void handleWsHandshake(InputStream inputStream, OutputStream outputStream) {
             /* Create reader for reading text data */
             InputStreamReader reader = new InputStreamReader(inputStream);
-
+            String request = readHttpRequestResponse(reader);
+            String key = null;
+            int responseCode = validateRequest(request, key);
+            Log.e(TAG, String.valueOf(responseCode));
         }
 
         private String readHttpRequestResponse(Reader reader) {
@@ -57,7 +61,6 @@ public class WsSoundServer {
             boolean isRequestRead = false;
             StringBuilder request = new StringBuilder();
             char[] lastFourCharacters = new char[4];
-            Log.e(TAG, "Read request");
             while (isRequestRead == false) {
                 /* Try reading character from stream */
                 try {
@@ -76,6 +79,59 @@ public class WsSoundServer {
             }
             return request.toString();
         }
+
+        private int validateRequest(String request, String key) {
+            Scanner scanner = new Scanner(request);
+            String currentToken = "";
+
+            /* Check if method GET is used */
+            currentToken = scanner.next();
+            if(!currentToken.equals("GET")) {
+                scanner.close();
+                return 405;
+            }
+            /* Check if location is valid */
+            currentToken = scanner.next();
+            if(!currentToken.equals("/audio-stream")) {
+                scanner.close();
+                return 404;
+            }
+            /* Check if protocol is valid */
+            currentToken = scanner.next();
+            if(!currentToken.equals("HTTP/1.1")) {
+                scanner.close();
+                return 400;
+            }
+
+            /* Go to next line (Skip \r\n in first line) */
+            scanner.nextLine();
+
+            /* Find Upgrade Header */
+            boolean upgradeHeaderExists = false;
+            boolean keyHeaderExists = false;
+            while(scanner.hasNextLine()) {
+                currentToken = scanner.nextLine();
+                if(currentToken.equals("Upgrade: websocket")) {
+                    upgradeHeaderExists = true;
+                }
+                if(currentToken.startsWith("Sec-WebSocket-Accept:")) {
+                    String[] keyHeaderSplit = currentToken.split(" ");
+                    if(keyHeaderSplit.length != 2) {
+                        scanner.close();
+                        return 400;
+                    }
+                    key = keyHeaderSplit[1];
+                    keyHeaderExists = true;
+                }
+            }
+            scanner.close();
+            if(!(keyHeaderExists && upgradeHeaderExists)) {
+                scanner.close();
+                return 400;
+            }
+            return 101;
+        }
+
     }
 
 
