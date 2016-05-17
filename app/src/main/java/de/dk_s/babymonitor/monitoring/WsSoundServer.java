@@ -6,11 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -23,7 +22,8 @@ public class WsSoundServer {
 
     private class ConnectionHandlingRunnable implements Runnable {
 
-        private final char[] httpRequestLimiter = new char[] { '\r', '\n', '\r', '\n' };
+        private final char[] httpRequestLimiter = new char[]{'\r', '\n', '\r', '\n'};
+
 
         @Override
         public void run() {
@@ -47,30 +47,37 @@ public class WsSoundServer {
         }
 
         private void handleWsHandshake(InputStream inputStream, OutputStream outputStream) {
-            /* Create reader */
+            /* Create reader for reading text data */
             InputStreamReader reader = new InputStreamReader(inputStream);
+
+        }
+
+        private String readHttpRequestResponse(Reader reader) {
             /* Read whole request */
             boolean isRequestRead = false;
-            Queue<Character> characterQueue = new LinkedList<Character>();
-            Character[] lastFourCharactersArray = new Character[4];
             StringBuilder request = new StringBuilder();
+            char[] lastFourCharacters = new char[4];
+            Log.e(TAG, "Read request");
             while (isRequestRead == false) {
                 /* Try reading character from stream */
                 try {
-                    char currentCharacter = (char)reader.read();
+                    int currentByte = reader.read();
+                    char currentCharacter = (char) currentByte;
                     request.append(currentCharacter);
-                    characterQueue.add(currentCharacter);
-                    if(characterQueue.size() > 4) {
-                        characterQueue.remove();
+                    if (request.length() >= 4) {
+                        request.getChars(request.length() - 4, request.length(), lastFourCharacters, 0);
+                        if (Arrays.equals(lastFourCharacters, httpRequestLimiter)) {
+                            isRequestRead = true;
+                        }
                     }
-                    characterQueue.toArray(lastFourCharactersArray);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.e(TAG, "Error: Parser error while parsing request.");
                 }
             }
+            return request.toString();
         }
-
     }
+
 
     private static final String TAG = "WsSoundServer";
 
