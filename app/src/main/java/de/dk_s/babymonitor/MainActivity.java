@@ -5,17 +5,12 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import java.util.Observable;
-import java.util.Observer;
-
 import de.dk_s.babymonitor.monitoring.MicRecorder;
-import de.dk_s.babymonitor.monitoring.MonitoringService;
-import de.dk_s.babymonitor.monitoring.WsSoundServer;
+import de.dk_s.babymonitor.monitoring.SoundServer;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
 
     private MicRecorder micRecorder;
 
-    private WsSoundServer wsSoundServer;
+    private SoundServer soundServer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,8 +40,8 @@ public class MainActivity extends AppCompatActivity {
         micRecorder.enableDownsampling(true);
         micRecorder.startRecording();
 
-        wsSoundServer = new WsSoundServer();
-        wsSoundServer.startServer();
+        soundServer = new SoundServer();
+        soundServer.startServer();
     }
 
     @Override
