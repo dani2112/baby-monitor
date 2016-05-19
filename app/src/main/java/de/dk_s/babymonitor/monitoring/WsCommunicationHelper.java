@@ -178,4 +178,15 @@ public class WsCommunicationHelper {
         }
     }
 
+    /* see http://stackoverflow.com/questions/8125507/how-can-i-send-and-receive-websocket-messages-on-the-server-side */
+    public static void sendData(int opCode, byte[] data, OutputStream outputStream) {
+
+
+    }
+
+    /* see http://stackoverflow.com/questions/8125507/how-can-i-send-and-receive-websocket-messages-on-the-server-side */
+    public static void receiveData(byte[] data, OutputStream outputStream) {
+
+    }
+
 }
