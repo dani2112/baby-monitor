@@ -4,13 +4,9 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.Reader;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
-import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -70,7 +66,7 @@ public class SoundServer {
                 InputStream inputStream = clientSocket.getInputStream();
                 OutputStream outputStream = clientSocket.getOutputStream();
 
-                boolean isWsConnection = WsSetupHelper.handleWsHandshake(inputStream, outputStream);
+                boolean isWsConnection = WsCommunicationHelper.handleWsHandshake(inputStream, outputStream);
             } catch (IOException e) {
                 Log.e(TAG, "Error: Server was interrupted. Maybe stopped from external thread.");
             }
