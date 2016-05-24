@@ -18,6 +18,15 @@ import java.util.Scanner;
  */
 public class WsCommunicationHelper {
 
+    private static class HandshakeReturnValue {
+
+        public int returnValue;
+
+        public String key;
+
+    }
+
+
     private static final String TAG = "WsCommunicationHelper";
 
     private final static char[] httpRequestLimiter = new char[]{'\r', '\n', '\r', '\n'};
@@ -33,17 +42,17 @@ public class WsCommunicationHelper {
         /* Create reader for reading text data */
         InputStreamReader reader = new InputStreamReader(inputStream);
         String request = readHttpRequestResponse(reader);
-        String key = null;
-        int responseCode = validateRequest(request, key);
-        if (responseCode == -1) {
+
+        HandshakeReturnValue handshakeReturnValue = validateRequest(request);
+        if (handshakeReturnValue.returnValue == -1) {
             return false;
         }
-        if (responseCode == 101) {
-            key = computeKeyHash(key);
-
+        if (handshakeReturnValue.returnValue == 101) {
+            String key = computeKeyHash(handshakeReturnValue.key);
+            sendWsUpgradeConfirmation(key, outputStream);
         } else {
             Log.e(TAG, "Invalid request");
-            sendHttpErrorResponse(responseCode, outputStream);
+            sendHttpErrorResponse(handshakeReturnValue.returnValue, outputStream);
         }
         return true;
     }
@@ -72,10 +81,12 @@ public class WsCommunicationHelper {
         return request.toString();
     }
 
-    private static int validateRequest(String request, String key) {
+    private static HandshakeReturnValue validateRequest(String request) {
+        HandshakeReturnValue handshakeReturnValue = new HandshakeReturnValue();
         /* Check if request was sent by phone that wants to get audio data */
         if (request.equals("PHONE\r\n\r\n")) {
-            return -1;
+            handshakeReturnValue.returnValue = -1;
+            return handshakeReturnValue;
         }
 
         Scanner scanner = new Scanner(request);
@@ -85,19 +96,22 @@ public class WsCommunicationHelper {
         currentToken = scanner.next();
         if (!currentToken.equals("GET")) {
             scanner.close();
-            return 405;
+            handshakeReturnValue.returnValue = 405;
+            return handshakeReturnValue;
         }
             /* Check if location is valid */
         currentToken = scanner.next();
         if (!currentToken.equals("/audio-stream")) {
             scanner.close();
-            return 404;
+            handshakeReturnValue.returnValue = 404;
+            return handshakeReturnValue;
         }
             /* Check if protocol is valid */
         currentToken = scanner.next();
         if (!currentToken.equals("HTTP/1.1")) {
             scanner.close();
-            return 400;
+            handshakeReturnValue.returnValue = 400;
+            return handshakeReturnValue;
         }
 
             /* Go to next line (Skip \r\n in first line) */
@@ -111,22 +125,25 @@ public class WsCommunicationHelper {
             if (currentToken.equals("Upgrade: websocket")) {
                 upgradeHeaderExists = true;
             }
-            if (currentToken.startsWith("Sec-WebSocket-Accept:")) {
+            if (currentToken.startsWith("Sec-WebSocket-Key:")) {
                 String[] keyHeaderSplit = currentToken.split(" ");
                 if (keyHeaderSplit.length != 2) {
                     scanner.close();
-                    return 400;
+                    handshakeReturnValue.returnValue = 400;
+                    return handshakeReturnValue;
                 }
-                key = keyHeaderSplit[1];
+                handshakeReturnValue.key = keyHeaderSplit[1];
                 keyHeaderExists = true;
             }
         }
         scanner.close();
         if (!(keyHeaderExists && upgradeHeaderExists)) {
             scanner.close();
-            return 400;
+            handshakeReturnValue.returnValue = 400;
+            return handshakeReturnValue;
         }
-        return 101;
+        handshakeReturnValue.returnValue = 101;
+        return handshakeReturnValue;
     }
 
     /**
@@ -169,7 +186,8 @@ public class WsCommunicationHelper {
         String upgradeAnswer = "HTTP/1.1 101 Switching Protocols\r\n" +
                 "Upgrade: websocket\r\n" +
                 "Connection: Upgrade\r\n" +
-                "Sec-WebSocket-Accept: " + hashedKey + "\r\n\r\n";
+                "Sec-WebSocket-Accept: " + hashedKey + "\r\n" +
+                "Sec-WebSocket-Protocol: babymonitor\r\n\r\n";
         try {
             outputStream.write(upgradeAnswer.getBytes());
             outputStream.flush();
