@@ -3,6 +3,7 @@ package de.dk_s.babymonitor.monitoring;
 import android.util.Base64;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -54,6 +55,8 @@ public class WsCommunicationHelper {
             Log.e(TAG, "Invalid request");
             sendHttpErrorResponse(handshakeReturnValue.returnValue, outputStream);
         }
+        receiveData(inputStream);
+        //sendData(129, "Test".getBytes(), outputStream);
         return true;
     }
 
@@ -175,7 +178,9 @@ public class WsCommunicationHelper {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
             byte[] sha1Hash = md.digest(hashedKey.getBytes());
-            hashedKey = Base64.encodeToString(sha1Hash, Base64.DEFAULT);
+            /* NO_WRAP flag is important otherwise line breaks are added that break http confirmation request
+             * because of extra line breaks at the end (bug can be reproduced in chrome) */
+            hashedKey = Base64.encodeToString(sha1Hash, Base64.NO_WRAP);
         } catch (NoSuchAlgorithmException e) {
             Log.e(TAG, "Error: No SHA-1 algorithm available in java implementation.");
         }
@@ -186,8 +191,7 @@ public class WsCommunicationHelper {
         String upgradeAnswer = "HTTP/1.1 101 Switching Protocols\r\n" +
                 "Upgrade: websocket\r\n" +
                 "Connection: Upgrade\r\n" +
-                "Sec-WebSocket-Accept: " + hashedKey + "\r\n" +
-                "Sec-WebSocket-Protocol: babymonitor\r\n\r\n";
+                "Sec-WebSocket-Accept: " + hashedKey + "\r\n\r\n";
         try {
             outputStream.write(upgradeAnswer.getBytes());
             outputStream.flush();
@@ -198,13 +202,99 @@ public class WsCommunicationHelper {
 
     /* see http://stackoverflow.com/questions/8125507/how-can-i-send-and-receive-websocket-messages-on-the-server-side */
     public static void sendData(int opCode, byte[] data, OutputStream outputStream) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
+        /* Write opcode (10000001 for text) */
+        byteArrayOutputStream.write((byte) (opCode & 255));
 
+        /* Check where data should start */
+        byte[] lengthNumber;
+        long length = data.length;
+        if (length <= 125) {
+            lengthNumber = new byte[1];
+            lengthNumber[0] = (byte) length;
+        } else if (length >= 126 && length <= 65535) {
+            lengthNumber = new byte[3];
+            lengthNumber[0] = (byte) 126;
+            lengthNumber[1] = (byte) ((length >> 8) & 255);
+            lengthNumber[2] = (byte) (length & 255);
+        } else {
+            lengthNumber = new byte[9];
+            lengthNumber[0] = (byte) 127;
+            lengthNumber[1] = (byte) ((length >> 56) & 255);
+            lengthNumber[2] = (byte) ((length >> 48) & 255);
+            lengthNumber[3] = (byte) ((length >> 40) & 255);
+            lengthNumber[4] = (byte) ((length >> 32) & 255);
+            lengthNumber[5] = (byte) ((length >> 24) & 255);
+            lengthNumber[6] = (byte) ((length >> 16) & 255);
+            lengthNumber[7] = (byte) ((length >> 8) & 255);
+            lengthNumber[8] = (byte) (length & 255);
+        }
+        try {
+            byteArrayOutputStream.write(lengthNumber);
+            byteArrayOutputStream.write(data);
+            outputStream.write(byteArrayOutputStream.toByteArray());
+            outputStream.flush();
+        } catch (IOException e) {
+            Log.e(TAG, "Error: Exception while sending websocket message");
+        }
     }
 
     /* see http://stackoverflow.com/questions/8125507/how-can-i-send-and-receive-websocket-messages-on-the-server-side */
-    public static void receiveData(byte[] data, OutputStream outputStream) {
+    public static byte[] receiveData(InputStream inputStream) {
+        try {
+            int firstByte = inputStream.read();
+            int secondByte = inputStream.read();
+            long dataLength = secondByte & 127;
+            int indexFirstMask = 2;
+            if (dataLength == 126) {
+                indexFirstMask = 4;
+                byte[] lengthData = new byte[2];
+                lengthData[0] = (byte) inputStream.read();
+                lengthData[1] = (byte) inputStream.read();
+                dataLength = 0;
+                dataLength = dataLength | ((lengthData[0] & 255) << 8);
+                dataLength = dataLength | (lengthData[1] & 255);
+            } else if (dataLength == 127) {
+                indexFirstMask = 10;
+                byte[] lengthData = new byte[8];
+                lengthData[0] = (byte) inputStream.read();
+                lengthData[1] = (byte) inputStream.read();
+                lengthData[2] = (byte) inputStream.read();
+                lengthData[3] = (byte) inputStream.read();
+                lengthData[4] = (byte) inputStream.read();
+                lengthData[5] = (byte) inputStream.read();
+                lengthData[6] = (byte) inputStream.read();
+                lengthData[7] = (byte) inputStream.read();
+                dataLength = 0;
 
+                dataLength = dataLength | ((lengthData[0] & 255 << 56));
+                dataLength = dataLength | ((lengthData[1] & 255) << 48);
+                dataLength = dataLength | ((lengthData[2] & 255) << 40);
+                dataLength = dataLength | ((lengthData[3] & 255) << 32);
+                dataLength = dataLength | ((lengthData[4] & 255) << 24);
+                dataLength = dataLength | ((lengthData[5] & 255) << 16);
+                dataLength = dataLength | ((lengthData[6] & 255) << 8);
+                dataLength = dataLength | (lengthData[7] & 255);
+            }
+
+            /* Get mask bits */
+            byte[] maskBits = new byte[4];
+            maskBits[0] = (byte) inputStream.read();
+            maskBits[1] = (byte) inputStream.read();
+            maskBits[2] = (byte) inputStream.read();
+            maskBits[3] = (byte) inputStream.read();
+
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            for (int i = 0; i < dataLength; i++) {
+                int decodedByte = inputStream.read() ^ maskBits[i % 4];
+                byteArrayOutputStream.write(decodedByte);
+            }
+            Log.e(TAG, byteArrayOutputStream.toString());
+        } catch (IOException e) {
+            Log.e(TAG, "Error: Exception while receiving websocket frame.");
+        }
+        return null;
     }
 
 }
