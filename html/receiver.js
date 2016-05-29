@@ -12,6 +12,9 @@ SoundReceiver.prototype.startSoundReceiving = function(url) {
     websocket.onclose = function(){
        console.log('Connection closed');
     }
+    websocket.onmessage = function (event) {
+      console.log(event.data);
+    };
 }
 
 var receiver = new SoundReceiver();

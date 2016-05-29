@@ -55,8 +55,6 @@ public class WsCommunicationHelper {
             Log.e(TAG, "Invalid request");
             sendHttpErrorResponse(handshakeReturnValue.returnValue, outputStream);
         }
-        receiveData(inputStream);
-        //sendData(129, "Test".getBytes(), outputStream);
         return true;
     }
 
@@ -242,6 +240,7 @@ public class WsCommunicationHelper {
 
     /* see http://stackoverflow.com/questions/8125507/how-can-i-send-and-receive-websocket-messages-on-the-server-side */
     public static byte[] receiveData(InputStream inputStream) {
+        ByteArrayOutputStream byteArrayOutputStream = null;
         try {
             int firstByte = inputStream.read();
             int secondByte = inputStream.read();
@@ -285,7 +284,7 @@ public class WsCommunicationHelper {
             maskBits[2] = (byte) inputStream.read();
             maskBits[3] = (byte) inputStream.read();
 
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            byteArrayOutputStream = new ByteArrayOutputStream();
             for (int i = 0; i < dataLength; i++) {
                 int decodedByte = inputStream.read() ^ maskBits[i % 4];
                 byteArrayOutputStream.write(decodedByte);
@@ -294,7 +293,7 @@ public class WsCommunicationHelper {
         } catch (IOException e) {
             Log.e(TAG, "Error: Exception while receiving websocket frame.");
         }
-        return null;
+        return byteArrayOutputStream == null ? null : byteArrayOutputStream.toByteArray();
     }
 
 }
