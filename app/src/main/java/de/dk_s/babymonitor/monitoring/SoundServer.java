@@ -3,10 +3,10 @@ package de.dk_s.babymonitor.monitoring;
 import android.util.Log;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -22,6 +22,8 @@ public class SoundServer {
     private ExecutorService connectionHandlingExecutorService;
 
     private ServerSocket serverSocket;
+
+    private Map<Integer, SoundServerClient> clientList = new HashMap<Integer, SoundServerClient>();
 
 
     public void startServer() {
@@ -60,19 +62,18 @@ public class SoundServer {
             Log.e(TAG, "Error: Server Socket could not be opened");
         }
         while (isServerStarted) {
-                /* Accept incoming client connection */
+            /* Accept incoming client connection */
             try {
                 Socket clientSocket = serverSocket.accept();
-                InputStream inputStream = clientSocket.getInputStream();
-                OutputStream outputStream = clientSocket.getOutputStream();
 
-                boolean isWsConnection = WsCommunicationHelper.handleWsHandshake(inputStream, outputStream);
+                SoundServerClient soundServerClient = new SoundServerClient(clientSocket);
+
+                soundServerClient.startCommunication();
             } catch (IOException e) {
                 Log.e(TAG, "Error: Server was interrupted. Maybe stopped from external thread.");
             }
         }
     }
-
 
 
 }
