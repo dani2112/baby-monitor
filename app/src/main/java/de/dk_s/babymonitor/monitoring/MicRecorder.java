@@ -36,6 +36,14 @@ public class MicRecorder extends Observable {
             this.timeStamp = timeStamp;
             this.chunkData16Bit = chunkData;
         }
+
+        public byte[] getChunkData8Bit() {
+            return chunkData8Bit;
+        }
+
+        public short[] getChunkData16Bit() {
+            return chunkData16Bit;
+        }
     }
 
     private class RecordingRunnable implements Runnable {

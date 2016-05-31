@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         micRecorder.enableDownsampling(true);
         micRecorder.startRecording();
 
-        soundServer = new SoundServer();
+        soundServer = new SoundServer(micRecorder);
         soundServer.startServer();
     }
 

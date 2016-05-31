@@ -199,6 +199,7 @@ public class WsCommunicationHelper {
     }
 
     /* see http://stackoverflow.com/questions/8125507/how-can-i-send-and-receive-websocket-messages-on-the-server-side */
+    /* opCode 129 for text and 130 for binary data*/
     public static void sendData(int opCode, byte[] data, OutputStream outputStream) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 

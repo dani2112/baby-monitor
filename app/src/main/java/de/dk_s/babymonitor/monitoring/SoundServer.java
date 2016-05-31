@@ -42,6 +42,13 @@ public class SoundServer {
     /* Timer that stops timed out client connections */
     private Timer clientConnectionTimer;
 
+    /* Object that provides sound data */
+    private MicRecorder micRecorder;
+
+    public SoundServer(MicRecorder micRecorder) {
+        this.micRecorder = micRecorder;
+    }
+
     public void startServer() {
         if (isServerStarted) {
             return;
@@ -63,6 +70,7 @@ public class SoundServer {
                     Log.e(TAG, String.valueOf(currentClient.isConnected()));
                     if(!currentClient.isConnected()){
                         currentClient.stopCommunication();
+                        micRecorder.deleteObserver(currentClient);
                         iterator.remove();
                     }
                 }
@@ -94,6 +102,7 @@ public class SoundServer {
         } catch (IOException e) {
             Log.e(TAG, "Error: Unknown Exception while closing socket.");
         }
+        micRecorder.deleteObservers();
         clientConnectionTimer.cancel();
         clientConnectionMap.clear();
         serverExecutorService.shutdownNow();
@@ -109,6 +118,10 @@ public class SoundServer {
 
                 /* Create new client object */
                 SoundServerClient soundServerClient = new SoundServerClient(clientSocket);
+
+                /* Register client object as observer */
+                micRecorder.addObserver(soundServerClient);
+
                 /* Add it to map that is used to keep track of current connections and increase id counter */
                 clientConnectionMap.put(currentClientId, soundServerClient);
                 currentClientId++;
