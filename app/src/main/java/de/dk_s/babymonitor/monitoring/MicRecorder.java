@@ -91,7 +91,7 @@ public class MicRecorder extends Observable {
     ExecutorService recordingExecutorService;
 
     /* The duration of one audio chunk that is accessible through MicRecorder */
-    private final float chunkSizeInSeconds = 0.5f;
+    private final float chunkSizeInSeconds = 0.25f;
 
     /* The time of audio that should be buffered by AudioRecord object (audio has to be polled at least every x seconds) */
     private final float recordingBufferSizeInSeconds = 2.0f;
