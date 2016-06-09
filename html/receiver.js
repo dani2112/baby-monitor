@@ -11,8 +11,10 @@ function init() {
 }
 
 function SoundReceiver() {
-    this.bufferedMinCount = 3;
     this.chunkQueue = [];
+    this.chunkLength = 0.25;
+    this.lastTime = 0;
+    this.isStarted = false;
 
     this.channelCount = 1;
     this.sampleRate = 44100;
@@ -23,9 +25,20 @@ SoundReceiver.prototype.startSoundReceiving = function(url) {
     var self = this;
     /* Start sound scheduler */
     setTimeout(function schedule() {
-        var element = self.chunkQueue.shift();
-        if(element != undefined) {
-            console.log(element.timestamp);
+        if(self.chunkQueue.length > 3 && isStarted == false) {
+            isStarted = true;
+            var currentTime = audioContext.currentTime;
+            self.lastTime = currentTime;
+            self.playSound(self.chunkQueue.shift().data, self.lastTime);
+        } else if (self.chunkQueue.length > 0 && isStarted == true){
+            var currentTime = audioContext.currentTime;
+            console.log(currentTime);
+            if(currentTime - self.lastTime > self.chunkLength - 0.1) {
+                self.lastTime = self.lastTime + self.chunkLength;
+                self.playSound(self.chunkQueue.shift().data, self.lastTime);
+            }
+        } else {
+            isStarted = false;
         }
         setTimeout(schedule, 100);
     }, 0);
@@ -63,7 +76,7 @@ SoundReceiver.prototype.playSound = function(data, time) {
         var self = this;
         var dataLength = data.byteLength;
         var audioBuffer = audioContext.createBuffer(self.channelCount, dataLength, self.sampleRate);
-        audioBuffer.getChannelData(0).set(processedAudio);
+        audioBuffer.getChannelData(0).set(data);
         var source = audioContext.createBufferSource();
         source.buffer = audioBuffer;
         source.start(time);
