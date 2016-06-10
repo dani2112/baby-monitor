@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
 import de.dk_s.babymonitor.monitoring.MicRecorder;
 import de.dk_s.babymonitor.monitoring.SoundServer;
 
@@ -19,6 +20,8 @@ public class MainActivity extends AppCompatActivity {
     private MicRecorder micRecorder;
 
     private SoundServer soundServer;
+
+    private BabyVoiceMonitor babyVoiceMonitor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,11 +40,13 @@ public class MainActivity extends AppCompatActivity {
         });
 
         micRecorder = new MicRecorder();
-        micRecorder.enableDownsampling(true);
         micRecorder.startRecording();
 
-        soundServer = new SoundServer(micRecorder);
-        soundServer.startServer();
+        babyVoiceMonitor = new BabyVoiceMonitor(micRecorder);
+        babyVoiceMonitor.startMonitoring();
+
+//        soundServer = new SoundServer(micRecorder);
+//        soundServer.startServer();
     }
 
     @Override
