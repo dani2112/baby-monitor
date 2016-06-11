@@ -15,3 +15,4 @@ As user i want to be able to see visualisation of current and recent movement of
 As user i want to be able to use a safe connection to ensure sufficient privacy.
 As user i want to see the current battery state on another android device and get warned in case of empty battery.
 As user i want to see the current battery state in a webbrowser and get warned in case of empty battery.
+As user i want to be able to use the app on Android tablets as well as on Android smartphones.
