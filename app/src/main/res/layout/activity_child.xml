@@ -13,15 +13,16 @@
     <fragment
         android:id="@+id/soundAnimation"
         android:name="de.dk_s.babymonitor.SoundAnimationFragment"
-        android:layout_weight="0.33"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-    <fragment
-        android:id="@+id/soundAnimation2"
-        android:name="de.dk_s.babymonitor.SoundAnimationFragment"
-        android:layout_weight="0.33"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="100dp"/>
+
+    <Button
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:background="@drawable/round_button"
+        android:text="On"
+        android:id="@+id/button" />
 
 
 </LinearLayout>
