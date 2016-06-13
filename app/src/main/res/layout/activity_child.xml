@@ -21,7 +21,8 @@
         android:layout_height="100dp"
         android:layout_gravity="center"
         android:background="@drawable/round_button"
-        android:text="On"
+        android:textOn="On"
+        android:textOff="Off"
         android:id="@+id/button" />
 
 
