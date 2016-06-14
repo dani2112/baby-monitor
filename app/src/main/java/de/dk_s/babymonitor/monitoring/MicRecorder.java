@@ -44,6 +44,10 @@ public class MicRecorder extends Observable {
         public short[] getChunkData16Bit() {
             return chunkData16Bit;
         }
+
+        public long getTimeStamp() {
+            return timeStamp;
+        }
     }
 
     private class RecordingRunnable implements Runnable {
