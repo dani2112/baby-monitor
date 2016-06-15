@@ -27,7 +27,15 @@ public class ChildActivity extends AppCompatActivity implements SoundAnimationFr
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            monitoringService = ((MonitoringService.MonitoringServiceBinder)service).getService();
+            monitoringService = ((MonitoringService.MonitoringServiceBinder) service).getService();
+            ToggleButton onOffToggleButton = (ToggleButton) findViewById(R.id.onOffToggleButton);
+            if (monitoringService.isStarted()) {
+                onOffToggleButton.setOnCheckedChangeListener(null);
+                onOffToggleButton.setChecked(true);
+                onOffToggleButton.setOnCheckedChangeListener(checkedChangeListener);
+            } else {
+                onOffToggleButton.setChecked(false);
+            }
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -37,25 +45,26 @@ public class ChildActivity extends AppCompatActivity implements SoundAnimationFr
 
     private void doBindService() {
         lastServiceIntent = new Intent(this, MonitoringService.class);
-        bindService(lastServiceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
-        isBound = true;
+        isBound = bindService(lastServiceIntent, serviceConnection, 0);
     }
 
     private void doUnbindService() {
         if (isBound) {
             // Detach our existing connection.
             unbindService(serviceConnection);
-            isBound = true;
+            isBound = false;
         }
     }
 
     private CompoundButton.OnCheckedChangeListener checkedChangeListener = new CompoundButton.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            if(isChecked) {
+            if (isChecked) {
                 startService(lastServiceIntent);
+                doBindService();
             } else {
                 stopService(lastServiceIntent);
+                doUnbindService();
             }
         }
     };
@@ -68,7 +77,7 @@ public class ChildActivity extends AppCompatActivity implements SoundAnimationFr
 
         doBindService();
 
-        ToggleButton onOffToggleButton = (ToggleButton)findViewById(R.id.onOffToggleButton);
+        ToggleButton onOffToggleButton = (ToggleButton) findViewById(R.id.onOffToggleButton);
         onOffToggleButton.setOnCheckedChangeListener(checkedChangeListener);
     }
 
@@ -79,16 +88,7 @@ public class ChildActivity extends AppCompatActivity implements SoundAnimationFr
 
     protected void onResume() {
         super.onResume();
-        if(monitoringService != null) {
-            ToggleButton onOffToggleButton = (ToggleButton)findViewById(R.id.onOffToggleButton);
-            if (monitoringService.isStarted()) {
-                onOffToggleButton.setOnCheckedChangeListener(null);
-                onOffToggleButton.setChecked(true);
-                onOffToggleButton.setOnCheckedChangeListener(checkedChangeListener);
-            } else {
-                onOffToggleButton.setChecked(false);
-            }
-        }
+
     }
 
     @Override
