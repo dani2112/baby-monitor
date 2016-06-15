@@ -29,9 +29,9 @@
             android:parentActivityName=".MainActivity" />
 
         <service
-            android:name=".MonitoringService"
+            android:name=".monitoring.MonitoringService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="false"></service>
     </application>
 
 </manifest>

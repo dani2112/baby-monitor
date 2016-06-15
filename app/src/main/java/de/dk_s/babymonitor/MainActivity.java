@@ -20,12 +20,6 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
-    private MicRecorder micRecorder;
-
-    private SoundServer soundServer;
-
-    private BabyVoiceMonitor babyVoiceMonitor;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,14 +45,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        micRecorder = new MicRecorder();
-        micRecorder.startRecording();
-
-        babyVoiceMonitor = new BabyVoiceMonitor(micRecorder);
-        babyVoiceMonitor.startMonitoring();
-
-//        soundServer = new SoundServer(micRecorder);
-//        soundServer.startServer();
     }
 
     @Override

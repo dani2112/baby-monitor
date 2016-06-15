@@ -23,7 +23,7 @@
         android:background="@drawable/round_button"
         android:textOn="On"
         android:textOff="Off"
-        android:id="@+id/button" />
+        android:id="@+id/onOffToggleButton" />
 
 
 </LinearLayout>
