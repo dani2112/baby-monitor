@@ -15,14 +15,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import de.dk_s.babymonitor.monitoring.MonitoringService;
+import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
 
 
 public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHolder.Callback, Observer {
 
     private static final String TAG = "SoundAnimationSurfaceView";
 
-    private BlockingQueue<MonitoringService.AudioEvent> audioEventBlockingQueue;
+    private BlockingQueue<BabyVoiceMonitor.AudioEvent> audioEventBlockingQueue;
 
     ExecutorService executorService;
 
@@ -58,7 +58,7 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
             @Override
             public void run() {
                 try {
-                    while(isRunning) {
+                    while (isRunning) {
                         Thread.sleep(1000);
                         Canvas canvas = holder.lockCanvas();
                         drawAnimation(canvas);
@@ -73,18 +73,18 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
     }
 
     private void drawAnimation(Canvas canvas) {
-        audioEventBlockingQueue.add(new MonitoringService.AudioEvent(0, System.currentTimeMillis()));
+        audioEventBlockingQueue.add(new BabyVoiceMonitor.AudioEvent(0, System.currentTimeMillis()));
         int audioChunkLength = audioEventBlockingQueue.size();
         int width = canvas.getWidth();
-        float stepWidth = (float)width / 60;
+        float stepWidth = (float) width / 60;
         int height = canvas.getHeight();
-        for(int i = 0; i < audioChunkLength; i++) {
-            MonitoringService.AudioEvent audioEvent = audioEventBlockingQueue.poll();
-            if(audioEvent == null) {
+        for (int i = 0; i < audioChunkLength; i++) {
+            BabyVoiceMonitor.AudioEvent audioEvent = audioEventBlockingQueue.poll();
+            if (audioEvent == null) {
                 continue;
             }
             long timeStamp = audioEvent.getTimeStamp();
-            int position = (int)(((timeStamp / 1000l) % 60) * stepWidth);
+            int position = (int) (((timeStamp / 1000l) % 60) * stepWidth);
             canvas.drawColor(Color.WHITE);
             canvas.drawLine(position, 0, position, height - 1, paint);
         }
@@ -102,7 +102,7 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        if(!isRunning) {
+        if (!isRunning) {
             return;
         }
         isRunning = false;
@@ -111,7 +111,7 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
 
     @Override
     public void update(Observable observable, Object data) {
-        MonitoringService.AudioEvent audioEvent = (MonitoringService.AudioEvent)data;
+        BabyVoiceMonitor.AudioEvent audioEvent = (BabyVoiceMonitor.AudioEvent) data;
         audioEventBlockingQueue.add(audioEvent);
     }
 }

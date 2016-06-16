@@ -9,39 +9,6 @@ import android.widget.Toast;
 
 public class MonitoringService extends Service {
 
-    public static class AudioEvent {
-
-        private int eventType;
-
-        private long timeStamp;
-
-        private int audioLevel;
-
-        public AudioEvent(int eventType, long timeStamp) {
-            this.eventType = eventType;
-            this.timeStamp = timeStamp;
-        }
-
-        public AudioEvent(int eventType, long timeStamp, int audioLevel) {
-            this.eventType = eventType;
-            this.timeStamp = timeStamp;
-            this.audioLevel = audioLevel;
-        }
-
-        public int getEventType() {
-            return eventType;
-        }
-
-
-        public long getTimeStamp() {
-            return timeStamp;
-        }
-
-        public int getAudioLevel() {
-            return audioLevel;
-        }
-    }
-
     public class MonitoringServiceBinder extends Binder {
         public MonitoringService getService() {
             return MonitoringService.this;

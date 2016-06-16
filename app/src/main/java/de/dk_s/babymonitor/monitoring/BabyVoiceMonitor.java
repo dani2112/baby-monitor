@@ -10,11 +10,44 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class BabyVoiceMonitor implements Observer {
+public class BabyVoiceMonitor extends Observable implements Observer {
 
     /* Load native library */
     static {
         System.loadLibrary("babymonitor");
+    }
+
+    public static class AudioEvent {
+
+        private int eventType;
+
+        private long timeStamp;
+
+        private int audioLevel;
+
+        public AudioEvent(int eventType, long timeStamp) {
+            this.eventType = eventType;
+            this.timeStamp = timeStamp;
+        }
+
+        public AudioEvent(int eventType, long timeStamp, int audioLevel) {
+            this.eventType = eventType;
+            this.timeStamp = timeStamp;
+            this.audioLevel = audioLevel;
+        }
+
+        public int getEventType() {
+            return eventType;
+        }
+
+
+        public long getTimeStamp() {
+            return timeStamp;
+        }
+
+        public int getAudioLevel() {
+            return audioLevel;
+        }
     }
 
     private static final String TAG = "BabyVoiceMonitor";
@@ -69,7 +102,14 @@ public class BabyVoiceMonitor implements Observer {
                 continue;
             }
             float noiseLevel = computeNoiseLevel(audioChunk.getChunkData16Bit(), audioChunk.getChunkData16Bit().length);
-            Log.e(TAG, String.valueOf(noiseLevel));
+            if(noiseLevel > 200) {
+                setChanged();
+                notifyObservers(new AudioEvent(1, audioChunk.getTimeStamp(), (int)noiseLevel));
+            } else {
+                setChanged();
+                notifyObservers(new AudioEvent(0, audioChunk.getTimeStamp(), (int)noiseLevel));
+            }
+            Log.d(TAG, String.valueOf(noiseLevel));
         }
     }
 
