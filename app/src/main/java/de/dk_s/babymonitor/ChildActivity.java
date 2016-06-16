@@ -29,6 +29,7 @@ public class ChildActivity extends AppCompatActivity implements SoundAnimationFr
         public void onServiceConnected(ComponentName className, IBinder service) {
             monitoringService = ((MonitoringService.MonitoringServiceBinder) service).getService();
             ToggleButton onOffToggleButton = (ToggleButton) findViewById(R.id.onOffToggleButton);
+            Log.e(TAG, "Connected");
             if (monitoringService.isStarted()) {
                 onOffToggleButton.setOnCheckedChangeListener(null);
                 onOffToggleButton.setChecked(true);

@@ -83,6 +83,7 @@ public class MicRecorder extends Observable {
             }
 
             audioRecord.stop();
+            audioRecord.release();
         }
     }
 

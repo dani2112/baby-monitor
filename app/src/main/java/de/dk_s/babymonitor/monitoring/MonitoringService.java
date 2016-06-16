@@ -52,8 +52,11 @@ public class MonitoringService extends Service {
 
     private final IBinder binder = new MonitoringServiceBinder();
 
-
     private boolean isStarted = false;
+
+    private MicRecorder micRecorder = null;
+
+    private BabyVoiceMonitor babyVoiceMonitor = null;
 
     public MonitoringService() {
     }
@@ -70,6 +73,8 @@ public class MonitoringService extends Service {
 
     public void onDestroy() {
         Toast.makeText(this, "service destroyed", Toast.LENGTH_SHORT).show();
+        babyVoiceMonitor.stopMonitoring();
+        micRecorder.stopRecording();
         isStarted = false;
     }
 
@@ -83,6 +88,15 @@ public class MonitoringService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
         isStarted = true;
+        if(micRecorder == null) {
+            micRecorder = new MicRecorder();
+        }
+        if(babyVoiceMonitor == null) {
+            babyVoiceMonitor = new BabyVoiceMonitor(micRecorder);
+        }
+        micRecorder.startRecording();
+        babyVoiceMonitor.startMonitoring();
+
         return START_STICKY;    // restart service if it is killed by system and resources become available
     }
 
