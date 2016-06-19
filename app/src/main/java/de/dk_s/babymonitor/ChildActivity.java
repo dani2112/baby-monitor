@@ -70,6 +70,10 @@ public class ChildActivity extends AppCompatActivity implements SoundAnimationFr
         }
     };
 
+    public MonitoringService getMonitoringService() {
+        return monitoringService;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

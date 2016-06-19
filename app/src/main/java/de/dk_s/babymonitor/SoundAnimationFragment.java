@@ -1,5 +1,6 @@
 package de.dk_s.babymonitor;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -12,6 +13,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+
+import de.dk_s.babymonitor.monitoring.MonitoringService;
 
 
 /**

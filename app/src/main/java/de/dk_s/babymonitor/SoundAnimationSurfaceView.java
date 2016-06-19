@@ -1,5 +1,6 @@
 package de.dk_s.babymonitor;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -15,6 +16,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
+import de.dk_s.babymonitor.monitoring.MonitoringService;
 
 
 public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHolder.Callback, Observer {
@@ -39,7 +41,18 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
         init();
     }
 
+    private MonitoringService getMonitoringService() {
+        Context context = getContext();
+        if(context instanceof ChildActivity) {
+            return ((ChildActivity)context).getMonitoringService();
+        } else if (context instanceof ParentActivity) {
+            return null;
+        }
+        return null;
+    }
+
     private void init() {
+        getMonitoringService();
         holder = getHolder();
         holder.addCallback(this);
         paint = new Paint();
@@ -56,7 +69,7 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
         int width = canvas.getWidth();
         float stepWidth = (float) width / 60;
         int height = canvas.getHeight();
-            canvas.drawColor(Color.WHITE);
+        canvas.drawColor(Color.WHITE);
     }
 
     @Override
