@@ -1,17 +1,15 @@
 package de.dk_s.babymonitor;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.util.Deque;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -19,7 +17,7 @@ import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
 import de.dk_s.babymonitor.monitoring.MonitoringService;
 
 
-public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHolder.Callback, Observer {
+public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final String TAG = "SoundAnimationSurfaceView";
 
@@ -43,8 +41,8 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
 
     private MonitoringService getMonitoringService() {
         Context context = getContext();
-        if(context instanceof ChildActivity) {
-            return ((ChildActivity)context).getMonitoringService();
+        if (context instanceof ChildActivity) {
+            return ((ChildActivity) context).getMonitoringService();
         } else if (context instanceof ParentActivity) {
             return null;
         }
@@ -63,6 +61,25 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
         setWillNotDraw(false);
         isRunning = true;
         executorService = Executors.newSingleThreadExecutor();
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                while (isRunning) {
+                    MonitoringService monitoringService = getMonitoringService();
+                    Deque<BabyVoiceMonitor.AudioEvent> recentAudioEventList = monitoringService == null ? null : monitoringService.getRecentAudioEventList();
+                    if (recentAudioEventList != null) {
+                        Canvas canvas = holder.lockCanvas();
+                        drawAnimation(canvas, recentAudioEventList);
+                        holder.unlockCanvasAndPost(canvas);
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
     }
 
     private void drawAnimation(Canvas canvas, Deque<BabyVoiceMonitor.AudioEvent> recentAudioEventList) {
@@ -89,18 +106,5 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
         }
         isRunning = false;
         executorService.shutdownNow();
-    }
-
-    @Override
-    public void update(Observable observable, Object data) {
-        final Deque<BabyVoiceMonitor.AudioEvent> recentAudioEventList = (Deque<BabyVoiceMonitor.AudioEvent>) data;
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                Canvas canvas = holder.lockCanvas();
-                drawAnimation(canvas, recentAudioEventList);
-                holder.unlockCanvasAndPost(canvas);
-            }
-        });
     }
 }

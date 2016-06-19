@@ -7,6 +7,8 @@ import android.os.IBinder;
 import android.provider.MediaStore;
 import android.widget.Toast;
 
+import java.util.Deque;
+
 public class MonitoringService extends Service {
 
     public class MonitoringServiceBinder extends Binder {
@@ -65,6 +67,10 @@ public class MonitoringService extends Service {
         babyVoiceMonitor.startMonitoring();
 
         return START_STICKY;    // restart service if it is killed by system and resources become available
+    }
+
+    public Deque<BabyVoiceMonitor.AudioEvent> getRecentAudioEventList() {
+        return babyVoiceMonitor == null ? null  : babyVoiceMonitor.getRecentAudioEventList();
     }
 
 }

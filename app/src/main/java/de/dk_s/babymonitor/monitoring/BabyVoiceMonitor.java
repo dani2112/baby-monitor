@@ -63,7 +63,7 @@ public class BabyVoiceMonitor extends Observable implements Observer {
 
     private ExecutorService audioChunkExecutorService;
 
-    private Deque<AudioEvent> recentAudioEventList;
+    private Deque<AudioEvent> recentAudioEventList = null;
 
     private int recentAudioEventListLimit = 480;
 
@@ -136,4 +136,9 @@ public class BabyVoiceMonitor extends Observable implements Observer {
         MicRecorder.AudioChunk audioChunk = (MicRecorder.AudioChunk) data;
         audioChunkBlockingQueue.add(audioChunk);
     }
+
+    public Deque<AudioEvent> getRecentAudioEventList() {
+        return recentAudioEventList;
+    }
+
 }
