@@ -3,6 +3,9 @@ package de.dk_s.babymonitor.monitoring;
 
 import android.util.Log;
 
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.BlockingQueue;
@@ -60,17 +63,24 @@ public class BabyVoiceMonitor extends Observable implements Observer {
 
     private ExecutorService audioChunkExecutorService;
 
+    private Deque<AudioEvent> recentAudioEventList;
+
+    private int recentAudioEventListLimit = 480;
+
     public BabyVoiceMonitor(MicRecorder micRecorder) {
         this.micRecorder = micRecorder;
     }
 
     public void startMonitoring() {
-        if(isStarted) {
+        if (isStarted) {
             return;
         }
         isStarted = true;
-        if(audioChunkBlockingQueue == null) {
+        if (audioChunkBlockingQueue == null) {
             audioChunkBlockingQueue = new LinkedBlockingQueue<>();
+        }
+        if (recentAudioEventList == null) {
+            recentAudioEventList = new LinkedList<>();
         }
         micRecorder.addObserver(this);
         audioChunkExecutorService = Executors.newSingleThreadExecutor();
@@ -83,7 +93,7 @@ public class BabyVoiceMonitor extends Observable implements Observer {
     }
 
     public void stopMonitoring() {
-        if(!isStarted) {
+        if (!isStarted) {
             return;
         }
         isStarted = false;
@@ -93,7 +103,8 @@ public class BabyVoiceMonitor extends Observable implements Observer {
     }
 
     private void processAudioElements() {
-        while(isStarted) {
+        while (isStarted) {
+            /* Calculate noise level of the audio chunk */
             MicRecorder.AudioChunk audioChunk = null;
             try {
                 audioChunk = audioChunkBlockingQueue.take();
@@ -102,14 +113,18 @@ public class BabyVoiceMonitor extends Observable implements Observer {
                 continue;
             }
             float noiseLevel = computeNoiseLevel(audioChunk.getChunkData16Bit(), audioChunk.getChunkData16Bit().length);
-            if(noiseLevel > 200) {
-                setChanged();
-                notifyObservers(new AudioEvent(1, audioChunk.getTimeStamp(), (int)noiseLevel));
-            } else {
-                setChanged();
-                notifyObservers(new AudioEvent(0, audioChunk.getTimeStamp(), (int)noiseLevel));
+            /* Remove old elements from the queue if necessary */
+            if(recentAudioEventList.size() >= recentAudioEventListLimit) {
+                recentAudioEventList.remove();
             }
-            Log.d(TAG, String.valueOf(noiseLevel));
+            /* Add new audio elements to queue */
+            if (noiseLevel > 200) {
+                recentAudioEventList.add(new AudioEvent(1, audioChunk.getTimeStamp(), (int) noiseLevel));
+            } else {
+                recentAudioEventList.add(new AudioEvent(0, audioChunk.getTimeStamp(), (int) noiseLevel));
+            }
+            setChanged();
+            notifyObservers(recentAudioEventList);
         }
     }
 
@@ -118,7 +133,7 @@ public class BabyVoiceMonitor extends Observable implements Observer {
 
     @Override
     public void update(Observable observable, Object data) {
-        MicRecorder.AudioChunk audioChunk = (MicRecorder.AudioChunk)data;
+        MicRecorder.AudioChunk audioChunk = (MicRecorder.AudioChunk) data;
         audioChunkBlockingQueue.add(audioChunk);
     }
 }
