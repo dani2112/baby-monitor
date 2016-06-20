@@ -67,7 +67,7 @@ public class MonitoringService extends Service {
             babyVoiceMonitor = new BabyVoiceMonitor(micRecorder);
         }
         if(phoneCaller == null) {
-            phoneCaller = new PhoneCaller(babyVoiceMonitor, getApplicationContext());
+            phoneCaller = new PhoneCaller(babyVoiceMonitor, micRecorder, getApplicationContext());
         }
         micRecorder.startRecording();
         babyVoiceMonitor.startMonitoring();

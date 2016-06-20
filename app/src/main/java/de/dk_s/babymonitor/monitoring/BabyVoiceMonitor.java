@@ -1,7 +1,6 @@
 package de.dk_s.babymonitor.monitoring;
 
 
-import android.provider.MediaStore;
 import android.util.Log;
 
 import java.util.Deque;
