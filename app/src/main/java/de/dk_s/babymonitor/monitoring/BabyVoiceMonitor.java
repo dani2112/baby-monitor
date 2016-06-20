@@ -1,17 +1,18 @@
 package de.dk_s.babymonitor.monitoring;
 
 
+import android.provider.MediaStore;
 import android.util.Log;
 
 import java.util.Deque;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
 
 public class BabyVoiceMonitor extends Observable implements Observer {
 
@@ -26,14 +27,14 @@ public class BabyVoiceMonitor extends Observable implements Observer {
 
         private long timeStamp;
 
-        private int audioLevel;
+        private float audioLevel;
 
         public AudioEvent(int eventType, long timeStamp) {
             this.eventType = eventType;
             this.timeStamp = timeStamp;
         }
 
-        public AudioEvent(int eventType, long timeStamp, int audioLevel) {
+        public AudioEvent(int eventType, long timeStamp, float audioLevel) {
             this.eventType = eventType;
             this.timeStamp = timeStamp;
             this.audioLevel = audioLevel;
@@ -48,7 +49,7 @@ public class BabyVoiceMonitor extends Observable implements Observer {
             return timeStamp;
         }
 
-        public int getAudioLevel() {
+        public float getAudioLevel() {
             return audioLevel;
         }
     }
@@ -65,7 +66,11 @@ public class BabyVoiceMonitor extends Observable implements Observer {
 
     private Deque<AudioEvent> recentAudioEventList = null;
 
+    private Semaphore recentAudioEventListSemaphore = new Semaphore(1);
+
     private int recentAudioEventListLimit = 480;
+
+    private float audioLevelMax = 10000;
 
     public BabyVoiceMonitor(MicRecorder micRecorder) {
         this.micRecorder = micRecorder;
@@ -113,15 +118,22 @@ public class BabyVoiceMonitor extends Observable implements Observer {
                 continue;
             }
             float noiseLevel = computeNoiseLevel(audioChunk.getChunkData16Bit(), audioChunk.getChunkData16Bit().length);
-            /* Remove old elements from the queue if necessary */
-            if(recentAudioEventList.size() >= recentAudioEventListLimit) {
-                recentAudioEventList.remove();
-            }
-            /* Add new audio elements to queue */
-            if (noiseLevel > 200) {
-                recentAudioEventList.add(new AudioEvent(1, audioChunk.getTimeStamp(), (int) noiseLevel));
-            } else {
-                recentAudioEventList.add(new AudioEvent(0, audioChunk.getTimeStamp(), (int) noiseLevel));
+            /* Start list editing and therefore lock list */
+            try {
+                recentAudioEventListSemaphore.acquire();
+                /* Remove old elements from the queue if necessary */
+                if (recentAudioEventList.size() >= recentAudioEventListLimit) {
+                    recentAudioEventList.remove();
+                }
+                /* Add new audio elements to queue */
+                if (noiseLevel > 3000) {
+                    recentAudioEventList.add(new AudioEvent(1, audioChunk.getTimeStamp(), noiseLevel / audioLevelMax));
+                } else {
+                    recentAudioEventList.add(new AudioEvent(0, audioChunk.getTimeStamp(), noiseLevel / audioLevelMax));
+                }
+                recentAudioEventListSemaphore.release();
+            } catch (InterruptedException e) {
+                Log.e(TAG, "Error: Exception while updating audio event list.");
             }
             setChanged();
             notifyObservers(recentAudioEventList);
@@ -138,7 +150,15 @@ public class BabyVoiceMonitor extends Observable implements Observer {
     }
 
     public Deque<AudioEvent> getRecentAudioEventList() {
-        return recentAudioEventList;
+        Deque<AudioEvent> recentAudioEventListShallowCopy = null;
+        try {
+            recentAudioEventListSemaphore.acquire();
+            recentAudioEventListShallowCopy = new LinkedList<>(recentAudioEventList);
+            recentAudioEventListSemaphore.release();
+        } catch (InterruptedException e) {
+            Log.e(TAG, "Error: Exception while returning recent audio event list shallow copy");
+        }
+        return recentAudioEventListShallowCopy;
     }
 
 }

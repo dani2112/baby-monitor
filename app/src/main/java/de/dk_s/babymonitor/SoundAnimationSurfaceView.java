@@ -5,11 +5,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -26,6 +26,8 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
     private SurfaceHolder holder;
 
     private Paint paint;
+
+    private Paint alternativePaint;
 
     private boolean isRunning = false;
 
@@ -58,6 +60,11 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
         paint.setStyle(Paint.Style.FILL);
         paint.setStrokeWidth(5);
 
+        alternativePaint = new Paint();
+        alternativePaint.setColor(Color.RED);
+        alternativePaint.setStyle(Paint.Style.FILL);
+        alternativePaint.setStrokeWidth(5);
+
         setWillNotDraw(false);
         isRunning = true;
         executorService = Executors.newSingleThreadExecutor();
@@ -73,7 +80,7 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
                         holder.unlockCanvasAndPost(canvas);
                     }
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(500);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -83,10 +90,22 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
     }
 
     private void drawAnimation(Canvas canvas, Deque<BabyVoiceMonitor.AudioEvent> recentAudioEventList) {
+        long currentTimeStamp = System.currentTimeMillis();
         int width = canvas.getWidth();
-        float stepWidth = (float) width / 60;
         int height = canvas.getHeight();
+        float stepWidth = (float) width / 120;
         canvas.drawColor(Color.WHITE);
+        Iterator<BabyVoiceMonitor.AudioEvent> iterator = recentAudioEventList.descendingIterator();
+        while (iterator.hasNext()) {
+            BabyVoiceMonitor.AudioEvent currentEvent = iterator.next();
+            float timeDifferenceInSeconds = (float) (currentTimeStamp - currentEvent.getTimeStamp()) / 1000;
+            int position = (int) (timeDifferenceInSeconds * stepWidth);
+            if(currentEvent.getEventType() == 0) {
+                canvas.drawLine(width - position, height, width - position, height - currentEvent.getAudioLevel() * height, paint);
+            } else if (currentEvent.getEventType() == 1) {
+                canvas.drawLine(width - position, height, width - position, height - currentEvent.getAudioLevel() * height, alternativePaint);
+            }
+        }
     }
 
     @Override
