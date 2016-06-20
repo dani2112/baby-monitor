@@ -27,6 +27,8 @@ public class MonitoringService extends Service {
 
     private BabyVoiceMonitor babyVoiceMonitor = null;
 
+    private PhoneCaller phoneCaller = null;
+
     public MonitoringService() {
     }
 
@@ -44,6 +46,7 @@ public class MonitoringService extends Service {
         Toast.makeText(this, "service destroyed", Toast.LENGTH_SHORT).show();
         babyVoiceMonitor.stopMonitoring();
         micRecorder.stopRecording();
+        phoneCaller.stopListening();
         isStarted = false;
     }
 
@@ -63,8 +66,12 @@ public class MonitoringService extends Service {
         if(babyVoiceMonitor == null) {
             babyVoiceMonitor = new BabyVoiceMonitor(micRecorder);
         }
+        if(phoneCaller == null) {
+            phoneCaller = new PhoneCaller(babyVoiceMonitor, getApplicationContext());
+        }
         micRecorder.startRecording();
         babyVoiceMonitor.startMonitoring();
+        phoneCaller.startListening();
 
         return START_STICKY;    // restart service if it is killed by system and resources become available
     }

@@ -119,6 +119,7 @@ public class BabyVoiceMonitor extends Observable implements Observer {
             }
             float noiseLevel = computeNoiseLevel(audioChunk.getChunkData16Bit(), audioChunk.getChunkData16Bit().length);
             /* Start list editing and therefore lock list */
+            AudioEvent audioEvent = null;
             try {
                 recentAudioEventListSemaphore.acquire();
                 /* Remove old elements from the queue if necessary */
@@ -127,16 +128,18 @@ public class BabyVoiceMonitor extends Observable implements Observer {
                 }
                 /* Add new audio elements to queue */
                 if (noiseLevel > 3000) {
-                    recentAudioEventList.add(new AudioEvent(1, audioChunk.getTimeStamp(), noiseLevel / audioLevelMax));
+                    audioEvent = new AudioEvent(1, audioChunk.getTimeStamp(), noiseLevel / audioLevelMax);
+                    recentAudioEventList.add(audioEvent);
                 } else {
-                    recentAudioEventList.add(new AudioEvent(0, audioChunk.getTimeStamp(), noiseLevel / audioLevelMax));
+                    audioEvent = new AudioEvent(0, audioChunk.getTimeStamp(), noiseLevel / audioLevelMax);
+                    recentAudioEventList.add(audioEvent);
                 }
                 recentAudioEventListSemaphore.release();
             } catch (InterruptedException e) {
                 Log.e(TAG, "Error: Exception while updating audio event list.");
             }
             setChanged();
-            notifyObservers(recentAudioEventList);
+            notifyObservers(audioEvent);
         }
     }
 
