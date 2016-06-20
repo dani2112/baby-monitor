@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -52,7 +53,6 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
     }
 
     private void init() {
-        getMonitoringService();
         holder = getHolder();
         holder.addCallback(this);
         paint = new Paint();
@@ -66,27 +66,7 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
         alternativePaint.setStrokeWidth(5);
 
         setWillNotDraw(false);
-        isRunning = true;
-        executorService = Executors.newSingleThreadExecutor();
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                while (isRunning) {
-                    MonitoringService monitoringService = getMonitoringService();
-                    Deque<BabyVoiceMonitor.AudioEvent> recentAudioEventList = monitoringService == null ? null : monitoringService.getRecentAudioEventList();
-                    if (recentAudioEventList != null) {
-                        Canvas canvas = holder.lockCanvas();
-                        drawAnimation(canvas, recentAudioEventList);
-                        holder.unlockCanvasAndPost(canvas);
-                    }
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
+
     }
 
     private void drawAnimation(Canvas canvas, Deque<BabyVoiceMonitor.AudioEvent> recentAudioEventList) {
@@ -109,8 +89,28 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
     }
 
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-
+    public void surfaceCreated(final SurfaceHolder holder) {
+        isRunning = true;
+        executorService = Executors.newSingleThreadExecutor();
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                while (isRunning) {
+                    MonitoringService monitoringService = getMonitoringService();
+                    Deque<BabyVoiceMonitor.AudioEvent> recentAudioEventList = monitoringService == null ? null : monitoringService.getRecentAudioEventList();
+                    if (recentAudioEventList != null) {
+                        Canvas canvas = holder.lockCanvas();
+                        drawAnimation(canvas, recentAudioEventList);
+                        holder.unlockCanvasAndPost(canvas);
+                    }
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
     }
 
     @Override

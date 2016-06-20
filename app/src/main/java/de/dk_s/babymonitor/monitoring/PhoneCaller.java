@@ -54,7 +54,6 @@ public class PhoneCaller implements Observer {
         System.out.println(audioEvent.getEventType());
         if(audioEvent.getEventType() == 1 && isCalling == false) {
             isCalling = true;
-            System.out.println("Do something");
             Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "07305179214"));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                             | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
