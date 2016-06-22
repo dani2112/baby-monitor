@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -75,15 +74,17 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
         int height = canvas.getHeight();
         float stepWidth = (float) width / 120;
         canvas.drawColor(Color.WHITE);
-        Iterator<BabyVoiceMonitor.AudioEvent> iterator = recentAudioEventList.descendingIterator();
-        while (iterator.hasNext()) {
-            BabyVoiceMonitor.AudioEvent currentEvent = iterator.next();
-            float timeDifferenceInSeconds = (float) (currentTimeStamp - currentEvent.getTimeStamp()) / 1000;
-            int position = (int) (timeDifferenceInSeconds * stepWidth);
-            if(currentEvent.getEventType() == 0) {
-                canvas.drawLine(width - position, height, width - position, height - currentEvent.getAudioLevel() * height, paint);
-            } else if (currentEvent.getEventType() == 1) {
-                canvas.drawLine(width - position, height, width - position, height - currentEvent.getAudioLevel() * height, alternativePaint);
+        if (recentAudioEventList != null) {
+            Iterator<BabyVoiceMonitor.AudioEvent> iterator = recentAudioEventList.descendingIterator();
+            while (iterator.hasNext()) {
+                BabyVoiceMonitor.AudioEvent currentEvent = iterator.next();
+                float timeDifferenceInSeconds = (float) (currentTimeStamp - currentEvent.getTimeStamp()) / 1000;
+                int position = (int) (timeDifferenceInSeconds * stepWidth);
+                if (currentEvent.getEventType() == 0) {
+                    canvas.drawLine(width - position, height, width - position, height - currentEvent.getAudioLevel() * height, paint);
+                } else if (currentEvent.getEventType() == 1) {
+                    canvas.drawLine(width - position, height, width - position, height - currentEvent.getAudioLevel() * height, alternativePaint);
+                }
             }
         }
     }
@@ -98,11 +99,9 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
                 while (isRunning) {
                     MonitoringService monitoringService = getMonitoringService();
                     Deque<BabyVoiceMonitor.AudioEvent> recentAudioEventList = monitoringService == null ? null : monitoringService.getRecentAudioEventList();
-                    if (recentAudioEventList != null) {
-                        Canvas canvas = holder.lockCanvas();
-                        drawAnimation(canvas, recentAudioEventList);
-                        holder.unlockCanvasAndPost(canvas);
-                    }
+                    Canvas canvas = holder.lockCanvas();
+                    drawAnimation(canvas, recentAudioEventList);
+                    holder.unlockCanvasAndPost(canvas);
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException e) {
