@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
-import android.provider.MediaStore;
 import android.widget.Toast;
 
 import java.util.Deque;
@@ -35,7 +34,7 @@ public class MonitoringService extends Service {
     }
 
     @Override
-    public void onCreate () {
+    public void onCreate() {
         Toast.makeText(this, "service created", Toast.LENGTH_SHORT).show();
         isStarted = false;
     }
@@ -57,10 +56,10 @@ public class MonitoringService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
         isStarted = true;
-        if(micRecorder == null) {
+        if (micRecorder == null) {
             micRecorder = new MicRecorder();
         }
-        if(babyVoiceMonitor == null) {
+        if (babyVoiceMonitor == null) {
             babyVoiceMonitor = new BabyVoiceMonitor(micRecorder);
         }
         micRecorder.startRecording();
@@ -70,7 +69,7 @@ public class MonitoringService extends Service {
     }
 
     public Deque<BabyVoiceMonitor.AudioEvent> getRecentAudioEventList() {
-        return babyVoiceMonitor == null ? null  : babyVoiceMonitor.getRecentAudioEventList();
+        return babyVoiceMonitor == null ? null : babyVoiceMonitor.getRecentAudioEventList();
     }
 
 }

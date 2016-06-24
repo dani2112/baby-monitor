@@ -3,7 +3,6 @@ package de.dk_s.babymonitor.monitoring;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
-import android.util.Log;
 
 import java.util.Observable;
 import java.util.concurrent.ExecutorService;
@@ -66,12 +65,12 @@ public class MicRecorder extends Observable {
             AudioRecord audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, 44100, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, recordingBufferSize);
             audioRecord.startRecording();
 
-            while(isRecordingRunning) {
+            while (isRecordingRunning) {
                 short[] audioData = new short[chunkSize];
                 long timeStamp = System.currentTimeMillis();
                 AudioChunk audioChunk;
                 audioRecord.read(audioData, 0, audioData.length);
-                if(isDownsamplingEnabled) {
+                if (isDownsamplingEnabled) {
                     byte[] audioDataBytes = new byte[audioData.length];
                     downsample16To8Bit(audioData, audioDataBytes, audioData.length);
                     audioChunk = new AudioChunk(timeStamp, audioDataBytes);
@@ -108,14 +107,14 @@ public class MicRecorder extends Observable {
     private boolean isDownsamplingEnabled = false;
 
     public void startRecording() {
-        if(isRecordingRunning) {
+        if (isRecordingRunning) {
             return;
         }
         int minBufferSize = AudioRecord.getMinBufferSize(samplingRate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
 
-        int chunkSize = (int)(samplingRate / (1 / chunkSizeInSeconds));
+        int chunkSize = (int) (samplingRate / (1 / chunkSizeInSeconds));
 
-        int recordingBufferSize = (int)((samplingRate * recordingBufferSizeInSeconds) / minBufferSize) * minBufferSize;
+        int recordingBufferSize = (int) ((samplingRate * recordingBufferSizeInSeconds) / minBufferSize) * minBufferSize;
 
         isRecordingRunning = true;
 
@@ -124,7 +123,7 @@ public class MicRecorder extends Observable {
     }
 
     public void stopRecording() {
-        if(!isRecordingRunning) {
+        if (!isRecordingRunning) {
             return;
         }
         isRecordingRunning = false;

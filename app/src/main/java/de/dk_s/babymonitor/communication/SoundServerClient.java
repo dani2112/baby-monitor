@@ -12,7 +12,6 @@ import java.util.Observer;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import de.dk_s.babymonitor.communication.WsCommunicationHelper;
 import de.dk_s.babymonitor.monitoring.MicRecorder;
 
 public class SoundServerClient implements Runnable, Observer {
@@ -81,7 +80,7 @@ public class SoundServerClient implements Runnable, Observer {
 
     @Override
     public void update(Observable observable, Object data) {
-        MicRecorder.AudioChunk audioChunk = (MicRecorder.AudioChunk)data;
+        MicRecorder.AudioChunk audioChunk = (MicRecorder.AudioChunk) data;
         if (audioChunksQueue.size() < maxQueueSize) {
             audioChunksQueue.add(audioChunk);
         } else {

@@ -2,18 +2,13 @@ package de.dk_s.babymonitor.unused;
 
 import android.content.Context;
 import android.content.Intent;
-import android.media.MediaRecorder;
 import android.net.Uri;
-import android.provider.ContactsContract;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -25,17 +20,17 @@ public class PhoneCaller implements Observer {
     private class EndCallListener extends PhoneStateListener {
         @Override
         public void onCallStateChanged(int state, String incomingNumber) {
-            if(TelephonyManager.CALL_STATE_RINGING == state) {
+            if (TelephonyManager.CALL_STATE_RINGING == state) {
                 Log.i(TAG, "RINGING, number: " + incomingNumber);
             }
-            if(TelephonyManager.CALL_STATE_OFFHOOK == state) {
+            if (TelephonyManager.CALL_STATE_OFFHOOK == state) {
                 //wait for phone to go offhook (probably set a boolean flag) so you know your app initiated the call.
                 Log.i(TAG, "OFFHOOK");
             }
-            if(TelephonyManager.CALL_STATE_IDLE == state) {
+            if (TelephonyManager.CALL_STATE_IDLE == state) {
                 //when this state occurs, and your flag is set, restart your app
                 Log.e(TAG, "IDLE");
-                if(isCalling) {
+                if (isCalling) {
                     try {
                         Thread.sleep(10000);
                     } catch (InterruptedException e) {
@@ -70,12 +65,12 @@ public class PhoneCaller implements Observer {
         this.micRecorder = micRecorder;
         this.context = context;
         this.callListener = new EndCallListener();
-        TelephonyManager telephonyManager = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
+        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         telephonyManager.listen(callListener, PhoneStateListener.LISTEN_CALL_STATE);
     }
 
     public void startListening() {
-        if(isRunning) {
+        if (isRunning) {
             return;
         }
         isRunning = true;
@@ -84,7 +79,7 @@ public class PhoneCaller implements Observer {
     }
 
     public void stopListening() {
-        if(!isRunning) {
+        if (!isRunning) {
             return;
         }
         isRunning = false;
@@ -95,8 +90,8 @@ public class PhoneCaller implements Observer {
 
     @Override
     public void update(Observable observable, Object data) {
-        BabyVoiceMonitor.AudioEvent audioEvent = (BabyVoiceMonitor.AudioEvent)data;
-        if(audioEvent.getEventType() == 1 && isCalling == false) {
+        BabyVoiceMonitor.AudioEvent audioEvent = (BabyVoiceMonitor.AudioEvent) data;
+        if (audioEvent.getEventType() == 1 && isCalling == false) {
             micRecorder.stopRecording();
             isCalling = true;
             Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "07305179214"));

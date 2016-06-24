@@ -70,7 +70,7 @@ public class SoundServer {
                     Map.Entry<Integer, SoundServerClient> entry = iterator.next();
                     SoundServerClient currentClient = entry.getValue();
                     Log.e(TAG, String.valueOf(currentClient.isConnected()));
-                    if(!currentClient.isConnected()){
+                    if (!currentClient.isConnected()) {
                         currentClient.stopCommunication();
                         micRecorder.deleteObserver(currentClient);
                         iterator.remove();

@@ -4,9 +4,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        final Button parentButton = (Button)findViewById(R.id.parentButton);
+        final Button parentButton = (Button) findViewById(R.id.parentButton);
         parentButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final Button childButton = (Button)findViewById((R.id.childButton));
+        final Button childButton = (Button) findViewById((R.id.childButton));
         childButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

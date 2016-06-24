@@ -22,7 +22,7 @@ import de.dk_s.babymonitor.R;
 public class SoundAnimationFragment extends Fragment {
 
     /* Tag for identifying the fragment */
-    private static final String TAG= "SoundAnimationFragment";
+    private static final String TAG = "SoundAnimationFragment";
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -96,7 +96,6 @@ public class SoundAnimationFragment extends Fragment {
         super.onDetach();
         mListener = null;
     }
-
 
 
     /**
