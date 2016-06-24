@@ -1,4 +1,4 @@
-package de.dk_s.babymonitor.monitoring;
+package de.dk_s.babymonitor.unused;
 
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +16,9 @@ import java.util.Observer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
+import de.dk_s.babymonitor.monitoring.MicRecorder;
 
 public class PhoneCaller implements Observer {
 

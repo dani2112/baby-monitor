@@ -1,4 +1,4 @@
-package de.dk_s.babymonitor;
+package de.dk_s.babymonitor.gui;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -13,6 +13,8 @@ import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import de.dk_s.babymonitor.ChildActivity;
+import de.dk_s.babymonitor.ParentActivity;
 import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
 import de.dk_s.babymonitor.monitoring.MonitoringService;
 

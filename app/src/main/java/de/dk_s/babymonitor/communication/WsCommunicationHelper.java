@@ -1,4 +1,4 @@
-package de.dk_s.babymonitor.monitoring;
+package de.dk_s.babymonitor.communication;
 
 import android.util.Base64;
 import android.util.Log;

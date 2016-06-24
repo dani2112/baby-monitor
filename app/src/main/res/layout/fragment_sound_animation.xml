@@ -3,10 +3,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimary"
-    tools:context="de.dk_s.babymonitor.SoundAnimationFragment">
+    tools:context=".gui.SoundAnimationFragment">
 
 
-    <de.dk_s.babymonitor.SoundAnimationSurfaceView
+    <de.dk_s.babymonitor.gui.SoundAnimationSurfaceView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/soundAnimationSurfaceView"

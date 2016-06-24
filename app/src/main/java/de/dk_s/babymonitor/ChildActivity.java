@@ -1,7 +1,6 @@
 package de.dk_s.babymonitor;
 
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.Uri;
@@ -9,10 +8,10 @@ import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ToggleButton;
 
+import de.dk_s.babymonitor.gui.SoundAnimationFragment;
 import de.dk_s.babymonitor.monitoring.MonitoringService;
 
 public class ChildActivity extends AppCompatActivity implements SoundAnimationFragment.OnFragmentInteractionListener {

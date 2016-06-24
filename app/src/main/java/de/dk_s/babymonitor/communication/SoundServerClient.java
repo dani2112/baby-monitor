@@ -1,7 +1,6 @@
-package de.dk_s.babymonitor.monitoring;
+package de.dk_s.babymonitor.communication;
 
 
-import android.provider.MediaStore;
 import android.util.Log;
 
 import java.io.IOException;
@@ -12,6 +11,9 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import de.dk_s.babymonitor.communication.WsCommunicationHelper;
+import de.dk_s.babymonitor.monitoring.MicRecorder;
 
 public class SoundServerClient implements Runnable, Observer {
 

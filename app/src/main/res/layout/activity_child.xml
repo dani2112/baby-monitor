@@ -12,7 +12,7 @@
 
     <fragment
         android:id="@+id/soundAnimation"
-        android:name="de.dk_s.babymonitor.SoundAnimationFragment"
+        android:name="de.dk_s.babymonitor.gui.SoundAnimationFragment"
         android:layout_width="match_parent"
         android:layout_height="100dp"/>
 
