@@ -14,7 +14,8 @@
         android:id="@+id/soundAnimation"
         android:name="de.dk_s.babymonitor.gui.SoundAnimationFragment"
         android:layout_width="match_parent"
-        android:layout_height="100dp"/>
+        android:layout_height="100dp"
+        android:layout_weight="0.2"/>
 
     <ToggleButton
         android:layout_width="100dp"
@@ -24,6 +25,13 @@
         android:textOn="On"
         android:textOff="Off"
         android:id="@+id/onOffToggleButton" />
+
+    <fragment
+        android:id="@+id/eventList"
+        android:name="de.dk_s.babymonitor.gui.eventlist.MonitorEventFragment"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_weight="0.8" />
 
 
 </LinearLayout>

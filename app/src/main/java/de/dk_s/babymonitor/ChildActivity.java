@@ -12,9 +12,11 @@ import android.widget.CompoundButton;
 import android.widget.ToggleButton;
 
 import de.dk_s.babymonitor.gui.SoundAnimationFragment;
+import de.dk_s.babymonitor.gui.eventlist.MonitorEventFragment;
+import de.dk_s.babymonitor.gui.eventlist.dummy.DummyContent;
 import de.dk_s.babymonitor.monitoring.MonitoringService;
 
-public class ChildActivity extends AppCompatActivity implements SoundAnimationFragment.OnFragmentInteractionListener {
+public class ChildActivity extends AppCompatActivity implements SoundAnimationFragment.OnFragmentInteractionListener, MonitorEventFragment.OnListFragmentInteractionListener {
 
     private static final String TAG = "ChildActivity";
 
@@ -97,6 +99,11 @@ public class ChildActivity extends AppCompatActivity implements SoundAnimationFr
 
     @Override
     public void onFragmentInteraction(Uri uri) {
+
+    }
+
+    @Override
+    public void onListFragmentInteraction(DummyContent.DummyItem item) {
 
     }
 }
