@@ -71,6 +71,8 @@ public class BabyVoiceMonitor extends Observable implements Observer {
 
     private float audioLevelMax = 10000;
 
+    private boolean isAlarmActive = false;
+
     public BabyVoiceMonitor(MicRecorder micRecorder) {
         this.micRecorder = micRecorder;
     }
@@ -106,6 +108,10 @@ public class BabyVoiceMonitor extends Observable implements Observer {
         audioChunkExecutorService.shutdownNow();
     }
 
+    /**
+     * Processes audio, generates audio event history and informs about changes
+     * Audio Event Codes: 0=No alarm active, 1=alarm activated, 2=alarm still active
+     */
     private void processAudioElements() {
         while (isStarted) {
             /* Calculate noise level of the audio chunk */
@@ -126,19 +132,23 @@ public class BabyVoiceMonitor extends Observable implements Observer {
                     recentAudioEventList.remove();
                 }
                 /* Add new audio elements to queue */
-                if (noiseLevel > 3000) {
+                if (noiseLevel > 3000 && !isAlarmActive) { // alarm not active and gets activated of this event
                     audioEvent = new AudioEvent(1, audioChunk.getTimeStamp(), noiseLevel / audioLevelMax);
                     recentAudioEventList.add(audioEvent);
-                } else {
+                    isAlarmActive = true;
+                } else if (isAlarmActive) { // alarm active but not activated of this event
+                    audioEvent = new AudioEvent(2, audioChunk.getTimeStamp(), noiseLevel / audioLevelMax);
+                    recentAudioEventList.add(audioEvent);
+                } else {  // alarm inactive and gets not activated
                     audioEvent = new AudioEvent(0, audioChunk.getTimeStamp(), noiseLevel / audioLevelMax);
                     recentAudioEventList.add(audioEvent);
                 }
                 recentAudioEventListSemaphore.release();
+                setChanged();
+                notifyObservers(audioEvent);
             } catch (InterruptedException e) {
                 Log.e(TAG, "Error: Exception while updating audio event list.");
             }
-            setChanged();
-            notifyObservers(audioEvent);
         }
     }
 

@@ -84,7 +84,7 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
                 int position = (int) (timeDifferenceInSeconds * stepWidth);
                 if (currentEvent.getEventType() == 0) {
                     canvas.drawLine(width - position, height, width - position, height - currentEvent.getAudioLevel() * height, paint);
-                } else if (currentEvent.getEventType() == 1) {
+                } else if (currentEvent.getEventType() == 1 || currentEvent.getEventType() == 2) {
                     canvas.drawLine(width - position, height, width - position, height - currentEvent.getAudioLevel() * height, alternativePaint);
                 }
             }
