@@ -68,7 +68,7 @@ public class MonitoringService extends Service {
             babyVoiceMonitor = new BabyVoiceMonitor(micRecorder);
         }
         if(alarmController == null) {
-            alarmController = new AlarmController(babyVoiceMonitor, new DatabaseEventLogger());
+            alarmController = new AlarmController(babyVoiceMonitor, new DatabaseEventLogger(getApplicationContext()));
         }
         micRecorder.startRecording();
         babyVoiceMonitor.startMonitoring();

@@ -49,6 +49,7 @@ public class AlarmController implements Observer {
         if (audioEvent.getEventType() == 1) {
             ToneGenerator toneG = new ToneGenerator(AudioManager.STREAM_ALARM, 100);
             toneG.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
+            databaseEventLogger.logAlarmEnabled(audioEvent.getTimeStamp());
         }
     }
 }
