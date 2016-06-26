@@ -8,6 +8,8 @@ import android.widget.Toast;
 
 import java.util.Deque;
 
+import de.dk_s.babymonitor.monitoring.db.DatabaseEventLogger;
+
 public class MonitoringService extends Service {
 
     public class MonitoringServiceBinder extends Binder {

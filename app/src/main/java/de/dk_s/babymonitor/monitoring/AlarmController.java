@@ -3,10 +3,11 @@ package de.dk_s.babymonitor.monitoring;
 
 import android.media.AudioManager;
 import android.media.ToneGenerator;
-import android.provider.MediaStore;
 
 import java.util.Observable;
 import java.util.Observer;
+
+import de.dk_s.babymonitor.monitoring.db.DatabaseEventLogger;
 
 public class AlarmController implements Observer {
 
