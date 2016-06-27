@@ -17,6 +17,8 @@ public class AlarmController implements Observer {
 
     private boolean isEnabled = false;
 
+    private long lastAlarmEntry = -1;
+
     public AlarmController(BabyVoiceMonitor babyVoiceMonitor) {
         this.babyVoiceMonitor = babyVoiceMonitor;
         this.databaseEventLogger = null;
@@ -49,7 +51,13 @@ public class AlarmController implements Observer {
         if (audioEvent.getEventType() == 1) {
             ToneGenerator toneG = new ToneGenerator(AudioManager.STREAM_ALARM, 100);
             toneG.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
-            databaseEventLogger.logAlarmEnabled(audioEvent.getTimeStamp());
+            lastAlarmEntry = databaseEventLogger.logAlarmEnabled(audioEvent.getTimeStamp());
+        } else if (audioEvent.getEventType() == 3) {
+            ToneGenerator toneG = new ToneGenerator(AudioManager.STREAM_ALARM, 100);
+            toneG.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 400);
+            if(lastAlarmEntry > 0) {
+                databaseEventLogger.logAlarmDisabled(audioEvent.getTimeStamp(), lastAlarmEntry);
+            }
         }
     }
 }

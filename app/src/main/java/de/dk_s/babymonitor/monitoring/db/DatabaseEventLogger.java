@@ -6,8 +6,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
+import android.util.Log;
+import android.widget.Toast;
 
 public class DatabaseEventLogger {
+
+    private static final String TAG = "DatabaseEventLogger";
 
     private Context context;
 
@@ -18,39 +22,24 @@ public class DatabaseEventLogger {
         this.dbHelper = new DatabaseEventLoggerDbHelper(context);
     }
 
-    public void performDatabaseIntegrityCheck() {
-
-    }
-
-    public void logAlarmEnabled(long timestamp) {
+    public long logAlarmEnabled(long timestamp) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_EVENT_TYPE, 1);
         values.put(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_TIMESTAMP, timestamp);
         values.putNull(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_ASSOCIATED_EVENT);
-        db.insert(DatabaseEventLoggerContract.LogEvent.TABLE_NAME, null, values);
+        long entryId = db.insert(DatabaseEventLoggerContract.LogEvent.TABLE_NAME, null, values);
+        return entryId;
     }
 
-    public void getLastEntry() {
-        String[] projection = {
-                DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_ID,
-                DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_EVENT_TYPE,
-        };
-
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor c = db.query(
-                DatabaseEventLoggerContract.LogEvent.TABLE_NAME,  // The table to query
-                projection,                               // The columns to return
-                selection,                                // The columns for the WHERE clause
-                selectionArgs,                            // The values for the WHERE clause
-                null,                                     // don't group the rows
-                null,                                     // don't filter by row groups
-                sortOrder                                 // The sort order
-        );
-    }
-
-    public void logAlarmDisabled(long timestamp, long associatedEvent) {
-
+    public long logAlarmDisabled(long timestamp, long associatedEvent) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_EVENT_TYPE, 3);
+        values.put(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_TIMESTAMP, timestamp);
+        values.put(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_ASSOCIATED_EVENT, associatedEvent);
+        long entryId = db.insert(DatabaseEventLoggerContract.LogEvent.TABLE_NAME, null, values);
+        return entryId;
     }
 
 }
