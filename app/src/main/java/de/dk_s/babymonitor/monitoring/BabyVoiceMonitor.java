@@ -7,6 +7,8 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -136,6 +138,14 @@ public class BabyVoiceMonitor extends Observable implements Observer {
                     audioEvent = new AudioEvent(1, audioChunk.getTimeStamp(), noiseLevel / audioLevelMax);
                     recentAudioEventList.add(audioEvent);
                     isAlarmActive = true;
+                    new Timer().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            isAlarmActive = false;
+                            setChanged();
+                            notifyObservers(new AudioEvent(3, System.currentTimeMillis(), -1));
+                        }
+                    }, 10000);
                 } else if (isAlarmActive) { // alarm active but not activated of this event
                     audioEvent = new AudioEvent(2, audioChunk.getTimeStamp(), noiseLevel / audioLevelMax);
                     recentAudioEventList.add(audioEvent);
