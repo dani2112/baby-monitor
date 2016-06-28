@@ -20,8 +20,6 @@ import de.dk_s.babymonitor.gui.eventlist.dummy.DummyContent;
 import de.dk_s.babymonitor.gui.eventlist.dummy.DummyContent.DummyItem;
 import de.dk_s.babymonitor.monitoring.AlarmController;
 
-import java.util.List;
-
 /**
  * A fragment representing a list of Items.
  * <p/>
@@ -32,11 +30,10 @@ public class MonitorEventFragment extends Fragment {
 
     private static final String TAG = "MonitorEventFragment";
 
-    // TODO: Customize parameter argument names
-    private static final String ARG_COLUMN_COUNT = "column-count";
-    // TODO: Customize parameters
-    private int mColumnCount = 1;
-    private OnListFragmentInteractionListener mListener;
+    private static final String COLUMN_COUNT = "column-count";
+
+    private int columnCount = 1;
+    private OnListFragmentInteractionListener onListFragmentInteractionListener;
 
     private BroadcastReceiver broadcastReceiver = null;
 
@@ -47,12 +44,11 @@ public class MonitorEventFragment extends Fragment {
     public MonitorEventFragment() {
     }
 
-    // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
     public static MonitorEventFragment newInstance(int columnCount) {
         MonitorEventFragment fragment = new MonitorEventFragment();
         Bundle args = new Bundle();
-        args.putInt(ARG_COLUMN_COUNT, columnCount);
+        args.putInt(COLUMN_COUNT, columnCount);
         fragment.setArguments(args);
         return fragment;
     }
@@ -62,7 +58,7 @@ public class MonitorEventFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
+            columnCount = getArguments().getInt(COLUMN_COUNT);
         }
 
         broadcastReceiver = new BroadcastReceiver() {
@@ -82,12 +78,12 @@ public class MonitorEventFragment extends Fragment {
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
-            if (mColumnCount <= 1) {
+            if (columnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
+                recyclerView.setLayoutManager(new GridLayoutManager(context, columnCount));
             }
-            recyclerView.setAdapter(new MyMonitorEventRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+            recyclerView.setAdapter(new MyMonitorEventRecyclerViewAdapter(DummyContent.ITEMS, onListFragmentInteractionListener));
         }
         return view;
     }
@@ -97,7 +93,7 @@ public class MonitorEventFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnListFragmentInteractionListener) {
-            mListener = (OnListFragmentInteractionListener) context;
+            onListFragmentInteractionListener = (OnListFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnListFragmentInteractionListener");
@@ -107,7 +103,7 @@ public class MonitorEventFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        onListFragmentInteractionListener = null;
     }
 
     @Override
