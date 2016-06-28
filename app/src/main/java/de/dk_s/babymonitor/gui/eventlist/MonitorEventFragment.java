@@ -1,11 +1,16 @@
 package de.dk_s.babymonitor.gui.eventlist;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +18,7 @@ import android.view.ViewGroup;
 import de.dk_s.babymonitor.R;
 import de.dk_s.babymonitor.gui.eventlist.dummy.DummyContent;
 import de.dk_s.babymonitor.gui.eventlist.dummy.DummyContent.DummyItem;
+import de.dk_s.babymonitor.monitoring.AlarmController;
 
 import java.util.List;
 
@@ -24,11 +30,15 @@ import java.util.List;
  */
 public class MonitorEventFragment extends Fragment {
 
+    private static final String TAG = "MonitorEventFragment";
+
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
+
+    private BroadcastReceiver broadcastReceiver = null;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -54,6 +64,13 @@ public class MonitorEventFragment extends Fragment {
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
+
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.e(TAG, "AAAAAAAAAAAAAAAAAAAA");
+            }
+        };
     }
 
     @Override
@@ -91,6 +108,18 @@ public class MonitorEventFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        LocalBroadcastManager.getInstance(this.getActivity()).registerReceiver(broadcastReceiver, new IntentFilter(AlarmController.EVENT_DB_UPDATED));
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        LocalBroadcastManager.getInstance(this.getActivity()).unregisterReceiver(broadcastReceiver);
     }
 
     /**
