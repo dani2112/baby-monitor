@@ -4,21 +4,25 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import de.dk_s.babymonitor.R;
-import de.dk_s.babymonitor.gui.eventlist.dummy.DummyContent;
-import de.dk_s.babymonitor.gui.eventlist.dummy.DummyContent.DummyItem;
+import de.dk_s.babymonitor.gui.eventlist.content.BabymonitorEventContent;
 import de.dk_s.babymonitor.monitoring.AlarmController;
+import de.dk_s.babymonitor.monitoring.db.DatabaseEventLogger;
+import de.dk_s.babymonitor.monitoring.db.DatabaseEventLoggerContract;
 
 /**
  * A fragment representing a list of Items.
@@ -34,6 +38,10 @@ public class MonitorEventFragment extends Fragment {
 
     private int columnCount = 1;
     private OnListFragmentInteractionListener onListFragmentInteractionListener;
+
+    private MyMonitorEventRecyclerViewAdapter myMonitorEventRecyclerViewAdapter = null;
+
+    private RecyclerView recyclerView = null;
 
     private BroadcastReceiver broadcastReceiver = null;
 
@@ -64,7 +72,24 @@ public class MonitorEventFragment extends Fragment {
         broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Log.e(TAG, "AAAAAAAAAAAAAAAAAAAA");
+                List<BabymonitorEventContent.BabymonitorEvent> eventList = new ArrayList<>();
+                Cursor cursor = new DatabaseEventLogger(getActivity()).getAllEntries();
+                if (cursor.moveToFirst()) {
+
+                    while (cursor.isAfterLast() == false) {
+                        int eventType = cursor.getInt(cursor
+                                .getColumnIndex(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_EVENT_TYPE));
+                        long timestamp = cursor.getLong(cursor
+                                .getColumnIndex(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_TIMESTAMP));
+                        eventList.add(new BabymonitorEventContent.BabymonitorEvent(eventType, timestamp));
+                        cursor.moveToNext();
+                    }
+                }
+                if(myMonitorEventRecyclerViewAdapter != null) {
+                    BabymonitorEventContent.BabymonitorEvent[] babymonitorEvents = new BabymonitorEventContent.BabymonitorEvent[eventList.size()];
+                    myMonitorEventRecyclerViewAdapter.replaceContent(eventList.toArray(babymonitorEvents));
+                    recyclerView.smoothScrollToPosition(babymonitorEvents.length);
+                }
             }
         };
     }
@@ -77,13 +102,14 @@ public class MonitorEventFragment extends Fragment {
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
+            recyclerView = (RecyclerView) view;
             if (columnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, columnCount));
             }
-            recyclerView.setAdapter(new MyMonitorEventRecyclerViewAdapter(DummyContent.ITEMS, onListFragmentInteractionListener));
+            myMonitorEventRecyclerViewAdapter = new MyMonitorEventRecyclerViewAdapter(onListFragmentInteractionListener);
+            recyclerView.setAdapter(myMonitorEventRecyclerViewAdapter);
         }
         return view;
     }
@@ -130,6 +156,6 @@ public class MonitorEventFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        void onListFragmentInteraction(BabymonitorEventContent.BabymonitorEvent item);
     }
 }

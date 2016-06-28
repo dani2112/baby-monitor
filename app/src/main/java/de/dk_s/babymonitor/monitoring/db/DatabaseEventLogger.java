@@ -42,4 +42,10 @@ public class DatabaseEventLogger {
         return entryId;
     }
 
+    public Cursor getAllEntries() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("select * from " + DatabaseEventLoggerContract.LogEvent.TABLE_NAME, null);
+        return cursor;
+    }
+
 }

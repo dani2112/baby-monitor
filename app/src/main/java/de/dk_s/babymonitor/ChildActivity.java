@@ -13,7 +13,7 @@ import android.widget.ToggleButton;
 
 import de.dk_s.babymonitor.gui.SoundAnimationFragment;
 import de.dk_s.babymonitor.gui.eventlist.MonitorEventFragment;
-import de.dk_s.babymonitor.gui.eventlist.dummy.DummyContent;
+import de.dk_s.babymonitor.gui.eventlist.content.BabymonitorEventContent;
 import de.dk_s.babymonitor.monitoring.MonitoringService;
 
 public class ChildActivity extends AppCompatActivity implements SoundAnimationFragment.OnFragmentInteractionListener, MonitorEventFragment.OnListFragmentInteractionListener {
@@ -103,7 +103,7 @@ public class ChildActivity extends AppCompatActivity implements SoundAnimationFr
     }
 
     @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+    public void onListFragmentInteraction(BabymonitorEventContent.BabymonitorEvent item) {
 
     }
 }
