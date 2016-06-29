@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 import de.dk_s.babymonitor.R;
@@ -20,18 +21,23 @@ public class MyMonitorEventRecyclerViewAdapter extends RecyclerView.Adapter<MyMo
 
     private final OnListFragmentInteractionListener onListFragmentInteractionListener;
 
-    private List<BabyVoiceMonitor.AudioEvent> eventList = new ArrayList<>();
+    private List<BabyVoiceMonitor.AudioEvent> eventList = new LinkedList<>();
 
     public MyMonitorEventRecyclerViewAdapter(OnListFragmentInteractionListener listener) {
         onListFragmentInteractionListener = listener;
     }
 
-    public void replaceContent(BabyVoiceMonitor.AudioEvent[] eventArray) {
+    public void setContent(BabyVoiceMonitor.AudioEvent[] eventArray) {
         eventList.clear();
         for (BabyVoiceMonitor.AudioEvent event : eventArray) {
             eventList.add(event);
         }
         notifyDataSetChanged();
+    }
+
+    public void addEventTop(BabyVoiceMonitor.AudioEvent audioEvent) {
+        eventList.add(0, audioEvent);
+        notifyItemInserted(0);
     }
 
     @Override

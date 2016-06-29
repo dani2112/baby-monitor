@@ -15,7 +15,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -73,26 +72,40 @@ public class MonitorEventFragment extends Fragment {
         broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                List<BabyVoiceMonitor.AudioEvent> eventList = new LinkedList<>();
-                Cursor cursor = new DatabaseEventLogger(getActivity()).getAllEntries();
+                Cursor cursor = new DatabaseEventLogger(getActivity()).getLastEntry();
                 if (cursor.moveToFirst()) {
-
-                    while (cursor.isAfterLast() == false) {
-                        int eventType = cursor.getInt(cursor
-                                .getColumnIndex(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_EVENT_TYPE));
-                        long timestamp = cursor.getLong(cursor
-                                .getColumnIndex(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_TIMESTAMP));
-                        eventList.add(0, new BabyVoiceMonitor.AudioEvent(eventType, timestamp));
-                        cursor.moveToNext();
+                    int eventType = cursor.getInt(cursor
+                            .getColumnIndex(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_EVENT_TYPE));
+                    long timestamp = cursor.getLong(cursor
+                            .getColumnIndex(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_TIMESTAMP));
+                    if (myMonitorEventRecyclerViewAdapter != null) {
+                        myMonitorEventRecyclerViewAdapter.addEventTop(new BabyVoiceMonitor.AudioEvent(eventType, timestamp));
+                        recyclerView.smoothScrollToPosition(0);
                     }
-                }
-                if(myMonitorEventRecyclerViewAdapter != null) {
-                    BabyVoiceMonitor.AudioEvent[] babymonitorEvents = new BabyVoiceMonitor.AudioEvent[eventList.size()];
-                    myMonitorEventRecyclerViewAdapter.replaceContent(eventList.toArray(babymonitorEvents));
-                    recyclerView.smoothScrollToPosition(0);
                 }
             }
         };
+    }
+
+    private void loadInitialRecyclerViewContent() {
+        List<BabyVoiceMonitor.AudioEvent> eventList = new LinkedList<>();
+        Cursor cursor = new DatabaseEventLogger(getActivity()).getAllEntries();
+        if (cursor.moveToFirst()) {
+
+            while (cursor.isAfterLast() == false) {
+                int eventType = cursor.getInt(cursor
+                        .getColumnIndex(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_EVENT_TYPE));
+                long timestamp = cursor.getLong(cursor
+                        .getColumnIndex(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_TIMESTAMP));
+                eventList.add(0, new BabyVoiceMonitor.AudioEvent(eventType, timestamp));
+                cursor.moveToNext();
+            }
+        }
+        if (myMonitorEventRecyclerViewAdapter != null) {
+            BabyVoiceMonitor.AudioEvent[] babymonitorEvents = new BabyVoiceMonitor.AudioEvent[eventList.size()];
+            myMonitorEventRecyclerViewAdapter.setContent(eventList.toArray(babymonitorEvents));
+            recyclerView.smoothScrollToPosition(0);
+        }
     }
 
     @Override
@@ -111,6 +124,7 @@ public class MonitorEventFragment extends Fragment {
             }
             myMonitorEventRecyclerViewAdapter = new MyMonitorEventRecyclerViewAdapter(onListFragmentInteractionListener);
             recyclerView.setAdapter(myMonitorEventRecyclerViewAdapter);
+            loadInitialRecyclerViewContent();
         }
         return view;
     }

@@ -48,4 +48,11 @@ public class DatabaseEventLogger {
         return cursor;
     }
 
+    public Cursor getLastEntry() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("select * from " + DatabaseEventLoggerContract.LogEvent.TABLE_NAME  +
+                " order by " + DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_ID + " desc limit 1", null);
+        return cursor;
+    }
+
 }
