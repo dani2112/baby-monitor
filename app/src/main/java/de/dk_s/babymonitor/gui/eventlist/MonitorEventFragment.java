@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import de.dk_s.babymonitor.R;
@@ -72,7 +73,7 @@ public class MonitorEventFragment extends Fragment {
         broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                List<BabyVoiceMonitor.AudioEvent> eventList = new ArrayList<>();
+                List<BabyVoiceMonitor.AudioEvent> eventList = new LinkedList<>();
                 Cursor cursor = new DatabaseEventLogger(getActivity()).getAllEntries();
                 if (cursor.moveToFirst()) {
 
@@ -81,14 +82,14 @@ public class MonitorEventFragment extends Fragment {
                                 .getColumnIndex(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_EVENT_TYPE));
                         long timestamp = cursor.getLong(cursor
                                 .getColumnIndex(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_TIMESTAMP));
-                        eventList.add(new BabyVoiceMonitor.AudioEvent(eventType, timestamp));
+                        eventList.add(0, new BabyVoiceMonitor.AudioEvent(eventType, timestamp));
                         cursor.moveToNext();
                     }
                 }
                 if(myMonitorEventRecyclerViewAdapter != null) {
                     BabyVoiceMonitor.AudioEvent[] babymonitorEvents = new BabyVoiceMonitor.AudioEvent[eventList.size()];
                     myMonitorEventRecyclerViewAdapter.replaceContent(eventList.toArray(babymonitorEvents));
-                    recyclerView.smoothScrollToPosition(babymonitorEvents.length);
+                    recyclerView.smoothScrollToPosition(0);
                 }
             }
         };

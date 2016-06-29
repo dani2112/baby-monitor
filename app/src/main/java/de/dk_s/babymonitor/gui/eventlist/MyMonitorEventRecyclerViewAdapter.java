@@ -6,7 +6,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import de.dk_s.babymonitor.R;
@@ -41,8 +44,22 @@ public class MyMonitorEventRecyclerViewAdapter extends RecyclerView.Adapter<MyMo
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.audioEvent = eventList.get(position);
-        holder.timeTextView.setText(String.valueOf(holder.audioEvent.getTimeStamp()));
-        holder.descriptionTextView.setText(String.valueOf(holder.audioEvent.getEventType()));
+
+        long eventTimestamp = holder.audioEvent.getTimeStamp();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(eventTimestamp);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+        Date date = (Date) calendar.getTime();
+        String dateString = simpleDateFormat.format(date);
+        holder.timeTextView.setText(dateString);
+
+        String eventDescriptionText = "";
+        if(holder.audioEvent.getEventType() == 1) {
+            eventDescriptionText = "Alarm aktiviert";
+        } else if (holder.audioEvent.getEventType() == 3) {
+            eventDescriptionText = "Alarm deaktiviert";
+        }
+        holder.descriptionTextView.setText(eventDescriptionText);
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
