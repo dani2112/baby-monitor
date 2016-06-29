@@ -11,21 +11,21 @@ import java.util.List;
 
 import de.dk_s.babymonitor.R;
 import de.dk_s.babymonitor.gui.eventlist.MonitorEventFragment.OnListFragmentInteractionListener;
-import de.dk_s.babymonitor.gui.eventlist.content.BabymonitorEventContent;
+import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
 
 public class MyMonitorEventRecyclerViewAdapter extends RecyclerView.Adapter<MyMonitorEventRecyclerViewAdapter.ViewHolder> {
 
     private final OnListFragmentInteractionListener onListFragmentInteractionListener;
 
-    private List<BabymonitorEventContent.BabymonitorEvent> eventList = new ArrayList<>();
+    private List<BabyVoiceMonitor.AudioEvent> eventList = new ArrayList<>();
 
     public MyMonitorEventRecyclerViewAdapter(OnListFragmentInteractionListener listener) {
         onListFragmentInteractionListener = listener;
     }
 
-    public void replaceContent(BabymonitorEventContent.BabymonitorEvent[] eventArray) {
+    public void replaceContent(BabyVoiceMonitor.AudioEvent[] eventArray) {
         eventList.clear();
-        for (BabymonitorEventContent.BabymonitorEvent event : eventArray) {
+        for (BabyVoiceMonitor.AudioEvent event : eventArray) {
             eventList.add(event);
         }
         notifyDataSetChanged();
@@ -40,16 +40,16 @@ public class MyMonitorEventRecyclerViewAdapter extends RecyclerView.Adapter<MyMo
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        holder.babymonitorEvent = eventList.get(position);
-        holder.timeTextView.setText(String.valueOf(holder.babymonitorEvent.getTimestamp()));
-        holder.descriptionTextView.setText(String.valueOf(holder.babymonitorEvent.getEventType()));
+        holder.audioEvent = eventList.get(position);
+        holder.timeTextView.setText(String.valueOf(holder.audioEvent.getTimeStamp()));
+        holder.descriptionTextView.setText(String.valueOf(holder.audioEvent.getEventType()));
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (null != onListFragmentInteractionListener) {
                     // Notify the active callbacks interface (the activity, if the
                     // fragment is attached to one) that an item has been selected.
-                    onListFragmentInteractionListener.onListFragmentInteraction(holder.babymonitorEvent);
+                    onListFragmentInteractionListener.onListFragmentInteraction(holder.audioEvent);
                 }
             }
         });
@@ -64,7 +64,7 @@ public class MyMonitorEventRecyclerViewAdapter extends RecyclerView.Adapter<MyMo
         public final View mView;
         public final TextView timeTextView;
         public final TextView descriptionTextView;
-        public BabymonitorEventContent.BabymonitorEvent babymonitorEvent;
+        public BabyVoiceMonitor.AudioEvent audioEvent;
 
         public ViewHolder(View view) {
             super(view);

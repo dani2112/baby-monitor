@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.dk_s.babymonitor.R;
-import de.dk_s.babymonitor.gui.eventlist.content.BabymonitorEventContent;
 import de.dk_s.babymonitor.monitoring.AlarmController;
+import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
 import de.dk_s.babymonitor.monitoring.db.DatabaseEventLogger;
 import de.dk_s.babymonitor.monitoring.db.DatabaseEventLoggerContract;
 
@@ -72,7 +72,7 @@ public class MonitorEventFragment extends Fragment {
         broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                List<BabymonitorEventContent.BabymonitorEvent> eventList = new ArrayList<>();
+                List<BabyVoiceMonitor.AudioEvent> eventList = new ArrayList<>();
                 Cursor cursor = new DatabaseEventLogger(getActivity()).getAllEntries();
                 if (cursor.moveToFirst()) {
 
@@ -81,12 +81,12 @@ public class MonitorEventFragment extends Fragment {
                                 .getColumnIndex(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_EVENT_TYPE));
                         long timestamp = cursor.getLong(cursor
                                 .getColumnIndex(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_TIMESTAMP));
-                        eventList.add(new BabymonitorEventContent.BabymonitorEvent(eventType, timestamp));
+                        eventList.add(new BabyVoiceMonitor.AudioEvent(eventType, timestamp));
                         cursor.moveToNext();
                     }
                 }
                 if(myMonitorEventRecyclerViewAdapter != null) {
-                    BabymonitorEventContent.BabymonitorEvent[] babymonitorEvents = new BabymonitorEventContent.BabymonitorEvent[eventList.size()];
+                    BabyVoiceMonitor.AudioEvent[] babymonitorEvents = new BabyVoiceMonitor.AudioEvent[eventList.size()];
                     myMonitorEventRecyclerViewAdapter.replaceContent(eventList.toArray(babymonitorEvents));
                     recyclerView.smoothScrollToPosition(babymonitorEvents.length);
                 }
@@ -156,6 +156,6 @@ public class MonitorEventFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(BabymonitorEventContent.BabymonitorEvent item);
+        void onListFragmentInteraction(BabyVoiceMonitor.AudioEvent item);
     }
 }
