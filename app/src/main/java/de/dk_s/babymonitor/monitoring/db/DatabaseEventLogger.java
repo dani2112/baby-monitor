@@ -48,6 +48,13 @@ public class DatabaseEventLogger {
         return cursor;
     }
 
+    public Cursor getAllEntriesSince(long timestamp) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("select * from " + DatabaseEventLoggerContract.LogEvent.TABLE_NAME + " where " +
+                DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_TIMESTAMP + " > " + timestamp, null);
+        return cursor;
+    }
+
     public Cursor getLastEntry() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = db.rawQuery("select * from " + DatabaseEventLoggerContract.LogEvent.TABLE_NAME  +

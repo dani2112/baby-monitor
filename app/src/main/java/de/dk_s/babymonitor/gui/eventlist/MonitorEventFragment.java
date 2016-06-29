@@ -89,7 +89,8 @@ public class MonitorEventFragment extends Fragment {
 
     private void loadInitialRecyclerViewContent() {
         List<BabyVoiceMonitor.AudioEvent> eventList = new LinkedList<>();
-        Cursor cursor = new DatabaseEventLogger(getActivity()).getAllEntries();
+        long sinceTimestamp = System.currentTimeMillis() - 86400000; // 24* 60 * 60 * 1000;
+        Cursor cursor = new DatabaseEventLogger(getActivity()).getAllEntriesSince(sinceTimestamp);
         if (cursor.moveToFirst()) {
 
             while (cursor.isAfterLast() == false) {
