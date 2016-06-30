@@ -64,11 +64,11 @@ public class AlarmController implements Observer {
         }
         isEnabled = false;
         babyVoiceMonitor.deleteObserver(this);
-        localBroadcastManager = null;
         if(lastMonitoringEnabledEntry > 0) {
             databaseEventLogger.logMonitoringDisabled(System.currentTimeMillis(), lastMonitoringEnabledEntry);
             broadcastEventHistoryChanged();
         }
+        localBroadcastManager = null;
     }
 
     @Override
