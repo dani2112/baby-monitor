@@ -64,6 +64,10 @@ public class MyMonitorEventRecyclerViewAdapter extends RecyclerView.Adapter<MyMo
             eventDescriptionText = "Alarm aktiviert";
         } else if (holder.audioEvent.getEventType() == 3) {
             eventDescriptionText = "Alarm deaktiviert";
+        } else if (holder.audioEvent.getEventType() == 4) {
+            eventDescriptionText = "Überwachung aktiviert";
+        } else if (holder.audioEvent.getEventType() == 5) {
+            eventDescriptionText = "Überwachung deaktiviert";
         }
         holder.descriptionTextView.setText(eventDescriptionText);
         holder.mView.setOnClickListener(new View.OnClickListener() {

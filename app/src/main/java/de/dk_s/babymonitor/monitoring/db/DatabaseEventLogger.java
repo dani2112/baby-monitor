@@ -42,6 +42,26 @@ public class DatabaseEventLogger {
         return entryId;
     }
 
+    public long logMonitoringEnabled(long timestamp) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_EVENT_TYPE, 4);
+        values.put(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_TIMESTAMP, timestamp);
+        values.putNull(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_ASSOCIATED_EVENT);
+        long entryId = db.insert(DatabaseEventLoggerContract.LogEvent.TABLE_NAME, null, values);
+        return entryId;
+    }
+
+    public long logMonitoringDisabled(long timestamp, long associatedEvent) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_EVENT_TYPE, 5);
+        values.put(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_TIMESTAMP, timestamp);
+        values.put(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_ASSOCIATED_EVENT, associatedEvent);
+        long entryId = db.insert(DatabaseEventLoggerContract.LogEvent.TABLE_NAME, null, values);
+        return entryId;
+    }
+
     public Cursor getAllEntries() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = db.rawQuery("select * from " + DatabaseEventLoggerContract.LogEvent.TABLE_NAME, null);

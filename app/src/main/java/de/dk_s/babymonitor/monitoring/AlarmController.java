@@ -30,6 +30,8 @@ public class AlarmController implements Observer {
 
     private long lastAlarmEntry = -1;
 
+    private long lastMonitoringEnabledEntry = -1;
+
     public AlarmController(BabyVoiceMonitor babyVoiceMonitor, Context context) {
         this.babyVoiceMonitor = babyVoiceMonitor;
         this.databaseEventLogger = null;
@@ -47,8 +49,12 @@ public class AlarmController implements Observer {
         if(isEnabled) {
             return;
         }
+        isEnabled = true;
         babyVoiceMonitor.addObserver(this);
         localBroadcastManager = LocalBroadcastManager.getInstance(context);
+        lastMonitoringEnabledEntry = System.currentTimeMillis();
+        databaseEventLogger.logMonitoringEnabled(lastMonitoringEnabledEntry);
+        broadcastEventHistoryChanged();
     }
 
 
@@ -56,8 +62,13 @@ public class AlarmController implements Observer {
         if(!isEnabled) {
             return;
         }
+        isEnabled = false;
         babyVoiceMonitor.deleteObserver(this);
         localBroadcastManager = null;
+        if(lastMonitoringEnabledEntry > 0) {
+            databaseEventLogger.logMonitoringDisabled(System.currentTimeMillis(), lastMonitoringEnabledEntry);
+            broadcastEventHistoryChanged();
+        }
     }
 
     @Override
