@@ -10,4 +10,27 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="de.dk_s.babymonitor.ParentActivity">
 
+    <fragment
+        android:id="@+id/soundAnimation"
+        android:name="de.dk_s.babymonitor.gui.SoundAnimationFragment"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_weight="0.2"/>
+
+    <ToggleButton
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:background="@drawable/round_button"
+        android:textOn="Connected"
+        android:textOff="Disconnected"
+        android:id="@+id/connectionToggleButton" />
+
+    <fragment
+        android:id="@+id/eventList"
+        android:name="de.dk_s.babymonitor.gui.eventlist.MonitorEventFragment"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_weight="0.8" />
+
 </LinearLayout>
