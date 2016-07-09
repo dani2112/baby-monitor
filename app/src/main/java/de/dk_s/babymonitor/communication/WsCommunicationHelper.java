@@ -37,7 +37,7 @@ public class WsCommunicationHelper {
      *
      * @param inputStream  the stream for receiving data
      * @param outputStream the stream for sending data
-     * @return true if a websocket connection with a browser was opened, false if it is another connection
+     * @return true if connection was successful, false otherwise
      */
     public static boolean handleWsHandshake(InputStream inputStream, OutputStream outputStream) {
         /* Create reader for reading text data */
@@ -46,16 +46,17 @@ public class WsCommunicationHelper {
 
         HandshakeReturnValue handshakeReturnValue = validateRequest(request);
         if (handshakeReturnValue.returnValue == -1) {
-            return false;
+            return true;
         }
         if (handshakeReturnValue.returnValue == 101) {
             String key = computeKeyHash(handshakeReturnValue.key);
             sendWsUpgradeConfirmation(key, outputStream);
+            return true;
         } else {
             Log.e(TAG, "Invalid request");
             sendHttpErrorResponse(handshakeReturnValue.returnValue, outputStream);
+            return false;
         }
-        return true;
     }
 
     private static String readHttpRequestResponse(Reader reader) {
