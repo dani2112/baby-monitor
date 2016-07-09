@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import java.util.Deque;
 
+import de.dk_s.babymonitor.communication.information.InformationServer;
 import de.dk_s.babymonitor.monitoring.db.DatabaseEventLogger;
 
 public class MonitoringService extends Service {
@@ -30,6 +31,8 @@ public class MonitoringService extends Service {
 
     private AlarmController alarmController = null;
 
+    private InformationServer informationServer = null;
+
     public MonitoringService() {
     }
 
@@ -48,6 +51,7 @@ public class MonitoringService extends Service {
         babyVoiceMonitor.stopMonitoring();
         micRecorder.stopRecording();
         alarmController.disableAlarmController();
+        informationServer.stopServer();
         isStarted = false;
     }
 
@@ -67,12 +71,16 @@ public class MonitoringService extends Service {
         if (babyVoiceMonitor == null) {
             babyVoiceMonitor = new BabyVoiceMonitor(micRecorder);
         }
-        if(alarmController == null) {
+        if (alarmController == null) {
             alarmController = new AlarmController(babyVoiceMonitor, new DatabaseEventLogger(getApplicationContext()), getApplicationContext());
+        }
+        if (informationServer == null) {
+            informationServer = new InformationServer();
         }
         micRecorder.startRecording();
         babyVoiceMonitor.startMonitoring();
         alarmController.enableAlarmController();
+        informationServer.startServer();
         return START_STICKY;    // restart service if it is killed by system and resources become available
     }
 
