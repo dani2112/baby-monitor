@@ -27,10 +27,12 @@ public class MyMonitorEventRecyclerViewAdapter extends RecyclerView.Adapter<MyMo
         onListFragmentInteractionListener = listener;
     }
 
-    public void setContent(BabyVoiceMonitor.AudioEvent[] eventArray) {
+    public void setContent(List<BabyVoiceMonitor.AudioEvent> eventListNew) {
         eventList.clear();
-        for (BabyVoiceMonitor.AudioEvent event : eventArray) {
-            eventList.add(event);
+        if(eventListNew != null) {
+            for (BabyVoiceMonitor.AudioEvent event : eventListNew) {
+                eventList.add(event);
+            }
         }
         notifyDataSetChanged();
     }

@@ -7,8 +7,10 @@ import android.os.IBinder;
 import android.widget.Toast;
 
 import java.util.Deque;
+import java.util.List;
 
 import de.dk_s.babymonitor.communication.information.InformationServer;
+import de.dk_s.babymonitor.gui.eventlist.EventHistoryDataProvider;
 import de.dk_s.babymonitor.monitoring.AlarmController;
 import de.dk_s.babymonitor.monitoring.AudioEventHistoryDataProvider;
 import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
@@ -16,8 +18,7 @@ import de.dk_s.babymonitor.monitoring.MicRecorder;
 import de.dk_s.babymonitor.monitoring.MonitoringService;
 import de.dk_s.babymonitor.monitoring.db.DatabaseEventLogger;
 
-public class ConnectionService extends Service implements AudioEventHistoryDataProvider {
-
+public class ConnectionService extends Service implements AudioEventHistoryDataProvider, EventHistoryDataProvider {
 
     public class ConnectionServiceBinder extends Binder {
         public ConnectionService getService() {
@@ -64,6 +65,16 @@ public class ConnectionService extends Service implements AudioEventHistoryDataP
 
     @Override
     public Deque<BabyVoiceMonitor.AudioEvent> getRecentAudioEvents() {
+        return null;
+    }
+
+    @Override
+    public List<BabyVoiceMonitor.AudioEvent> get24HoursAudioEvents() {
+        return null;
+    }
+
+    @Override
+    public BabyVoiceMonitor.AudioEvent getLastAudioEvent() {
         return null;
     }
 }

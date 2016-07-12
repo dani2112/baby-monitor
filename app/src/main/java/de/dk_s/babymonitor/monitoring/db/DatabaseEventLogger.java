@@ -9,7 +9,13 @@ import android.provider.BaseColumns;
 import android.util.Log;
 import android.widget.Toast;
 
-public class DatabaseEventLogger {
+import java.util.LinkedList;
+import java.util.List;
+
+import de.dk_s.babymonitor.gui.eventlist.EventHistoryDataProvider;
+import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
+
+public class DatabaseEventLogger implements EventHistoryDataProvider {
 
     private static final String TAG = "DatabaseEventLogger";
 
@@ -82,4 +88,26 @@ public class DatabaseEventLogger {
         return cursor;
     }
 
+    @Override
+    public List<BabyVoiceMonitor.AudioEvent> get24HoursAudioEvents() {
+        List<BabyVoiceMonitor.AudioEvent> eventList = new LinkedList<>();
+        long sinceTimestamp = System.currentTimeMillis() - 86400000; // 24* 60 * 60 * 1000;
+        Cursor cursor = getAllEntriesSince(sinceTimestamp);
+        if (cursor.moveToFirst()) {
+            while (cursor.isAfterLast() == false) {
+                int eventType = cursor.getInt(cursor
+                        .getColumnIndex(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_EVENT_TYPE));
+                long timestamp = cursor.getLong(cursor
+                        .getColumnIndex(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_TIMESTAMP));
+                eventList.add(0, new BabyVoiceMonitor.AudioEvent(eventType, timestamp));
+                cursor.moveToNext();
+            }
+        }
+        return eventList;
+    }
+
+    @Override
+    public BabyVoiceMonitor.AudioEvent getLastAudioEvent() {
+        return null;
+    }
 }

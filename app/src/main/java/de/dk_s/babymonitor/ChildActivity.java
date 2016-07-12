@@ -15,6 +15,7 @@ import de.dk_s.babymonitor.gui.SoundAnimationFragment;
 import de.dk_s.babymonitor.gui.eventlist.MonitorEventFragment;
 import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
 import de.dk_s.babymonitor.monitoring.MonitoringService;
+import de.dk_s.babymonitor.monitoring.db.DatabaseEventLogger;
 
 public class ChildActivity extends AppCompatActivity implements SoundAnimationFragment.OnFragmentInteractionListener, MonitorEventFragment.OnListFragmentInteractionListener {
 
@@ -73,6 +74,10 @@ public class ChildActivity extends AppCompatActivity implements SoundAnimationFr
 
     public MonitoringService getMonitoringService() {
         return monitoringService;
+    }
+
+    public DatabaseEventLogger getDatabaseEventLogger() {
+        return new DatabaseEventLogger(this);
     }
 
     @Override

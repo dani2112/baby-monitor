@@ -1,5 +1,6 @@
 package de.dk_s.babymonitor.gui.eventlist;
 
+import android.app.usage.UsageEvents;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +20,8 @@ import android.view.ViewGroup;
 import java.util.LinkedList;
 import java.util.List;
 
+import de.dk_s.babymonitor.ChildActivity;
+import de.dk_s.babymonitor.ParentActivity;
 import de.dk_s.babymonitor.R;
 import de.dk_s.babymonitor.monitoring.AlarmController;
 import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
@@ -88,23 +92,10 @@ public class MonitorEventFragment extends Fragment {
     }
 
     private void loadInitialRecyclerViewContent() {
-        List<BabyVoiceMonitor.AudioEvent> eventList = new LinkedList<>();
-        long sinceTimestamp = System.currentTimeMillis() - 86400000; // 24* 60 * 60 * 1000;
-        Cursor cursor = new DatabaseEventLogger(getActivity()).getAllEntriesSince(sinceTimestamp);
-        if (cursor.moveToFirst()) {
-
-            while (cursor.isAfterLast() == false) {
-                int eventType = cursor.getInt(cursor
-                        .getColumnIndex(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_EVENT_TYPE));
-                long timestamp = cursor.getLong(cursor
-                        .getColumnIndex(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_TIMESTAMP));
-                eventList.add(0, new BabyVoiceMonitor.AudioEvent(eventType, timestamp));
-                cursor.moveToNext();
-            }
-        }
+        EventHistoryDataProvider eventHistoryDataProvider = getEventHistoryDataProvider();
+        List<BabyVoiceMonitor.AudioEvent> eventList = eventHistoryDataProvider != null ? eventHistoryDataProvider.get24HoursAudioEvents() : null;
         if (myMonitorEventRecyclerViewAdapter != null) {
-            BabyVoiceMonitor.AudioEvent[] babymonitorEvents = new BabyVoiceMonitor.AudioEvent[eventList.size()];
-            myMonitorEventRecyclerViewAdapter.setContent(eventList.toArray(babymonitorEvents));
+            myMonitorEventRecyclerViewAdapter.setContent(eventList);
             recyclerView.smoothScrollToPosition(0);
         }
     }
@@ -128,6 +119,16 @@ public class MonitorEventFragment extends Fragment {
             loadInitialRecyclerViewContent();
         }
         return view;
+    }
+
+    public EventHistoryDataProvider getEventHistoryDataProvider() {
+        Context context = getContext();
+        if(context instanceof ChildActivity) {
+            return ((ChildActivity) context).getDatabaseEventLogger();
+        } else if (context instanceof ParentActivity) {
+            return ((ParentActivity) context).getConnectionService();
+        }
+        return null;
     }
 
 
