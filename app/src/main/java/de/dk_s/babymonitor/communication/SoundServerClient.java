@@ -64,13 +64,13 @@ public class SoundServerClient implements Runnable, Observer {
             e.printStackTrace();
         }
 
-        boolean isWsConnection = WsCommunicationHelper.handleWsHandshake(inputStream, outputStream);
+        boolean isWsConnection = WsCommunicationHelper.handleWsHandshakeServer(inputStream, outputStream);
 
         Log.e(TAG, "Running");
         while (isRunning) {
             try {
                 MicRecorder.AudioChunk currentChunk = audioChunksQueue.take();
-                WsCommunicationHelper.sendData(130, currentChunk.getChunkData8Bit(), outputStream);
+                WsCommunicationHelper.sendDataServer(130, currentChunk.getChunkData8Bit(), outputStream);
             } catch (InterruptedException e) {
                 Log.e(TAG, "Error: Exception while sending audio data. Maybe threadwas shutdown.");
             }

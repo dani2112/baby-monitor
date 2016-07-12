@@ -39,7 +39,7 @@ public class WsCommunicationHelper {
      * @param outputStream the stream for sending data
      * @return true if connection was successful, false otherwise
      */
-    public static boolean handleWsHandshake(InputStream inputStream, OutputStream outputStream) {
+    public static boolean handleWsHandshakeServer(InputStream inputStream, OutputStream outputStream) {
         /* Create reader for reading text data */
         InputStreamReader reader = new InputStreamReader(inputStream);
         String request = readHttpRequestResponse(reader);
@@ -201,7 +201,7 @@ public class WsCommunicationHelper {
 
     /* see http://stackoverflow.com/questions/8125507/how-can-i-send-and-receive-websocket-messages-on-the-server-side */
     /* opCode 129 for text and 130 for binary data*/
-    public static void sendData(int opCode, byte[] data, OutputStream outputStream) {
+    public static void sendDataServer(int opCode, byte[] data, OutputStream outputStream) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
         /* Write opcode (10000001 for text) */
@@ -241,7 +241,7 @@ public class WsCommunicationHelper {
     }
 
     /* see http://stackoverflow.com/questions/8125507/how-can-i-send-and-receive-websocket-messages-on-the-server-side */
-    public static byte[] receiveData(InputStream inputStream) {
+    public static byte[] receiveDataServer(InputStream inputStream) {
         ByteArrayOutputStream byteArrayOutputStream = null;
         try {
             int firstByte = inputStream.read();
@@ -297,5 +297,103 @@ public class WsCommunicationHelper {
         }
         return byteArrayOutputStream == null ? null : byteArrayOutputStream.toByteArray();
     }
+
+    /* see http://stackoverflow.com/questions/8125507/how-can-i-send-and-receive-websocket-messages-on-the-server-side */
+    /* opCode 129 for text and 130 for binary data*/
+    public static void sendDataClient(int opCode, byte[] data, OutputStream outputStream) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+        /* Write opcode (10000001 for text) */
+        byteArrayOutputStream.write((byte) (opCode & 255));
+
+        /* Check where data should start */
+        byte[] lengthNumber;
+        long length = data.length;
+        if (length <= 125) {
+            lengthNumber = new byte[1];
+            lengthNumber[0] = (byte) length;
+        } else if (length >= 126 && length <= 65535) {
+            lengthNumber = new byte[3];
+            lengthNumber[0] = (byte) 126;
+            lengthNumber[1] = (byte) ((length >> 8) & 255);
+            lengthNumber[2] = (byte) (length & 255);
+        } else {
+            lengthNumber = new byte[9];
+            lengthNumber[0] = (byte) 127;
+            lengthNumber[1] = (byte) ((length >> 56) & 255);
+            lengthNumber[2] = (byte) ((length >> 48) & 255);
+            lengthNumber[3] = (byte) ((length >> 40) & 255);
+            lengthNumber[4] = (byte) ((length >> 32) & 255);
+            lengthNumber[5] = (byte) ((length >> 24) & 255);
+            lengthNumber[6] = (byte) ((length >> 16) & 255);
+            lengthNumber[7] = (byte) ((length >> 8) & 255);
+            lengthNumber[8] = (byte) (length & 255);
+        }
+        try {
+            byteArrayOutputStream.write(lengthNumber);
+            byte[] maskBytes = new byte[] { 7, 8, 9, 10 };
+            byteArrayOutputStream.write(maskBytes);
+            for(int i = 0; i < data.length; i++) {
+                int encodedByte = data[i] ^ maskBytes[i % 4];
+                byteArrayOutputStream.write(encodedByte);
+            }
+            outputStream.write(byteArrayOutputStream.toByteArray());
+            outputStream.flush();
+        } catch (IOException e) {
+            Log.e(TAG, "Error: Exception while sending websocket message");
+        }
+    }
+
+    /* see http://stackoverflow.com/questions/8125507/how-can-i-send-and-receive-websocket-messages-on-the-server-side */
+    public static byte[] receiveDataClient(InputStream inputStream) {
+        ByteArrayOutputStream byteArrayOutputStream = null;
+        try {
+            int firstByte = inputStream.read();
+            int secondByte = inputStream.read();
+            long dataLength = secondByte & 127;
+            int indexFirstMask = 2;
+            if (dataLength == 126) {
+                indexFirstMask = 4;
+                byte[] lengthData = new byte[2];
+                lengthData[0] = (byte) inputStream.read();
+                lengthData[1] = (byte) inputStream.read();
+                dataLength = 0;
+                dataLength = dataLength | ((lengthData[0] & 255) << 8);
+                dataLength = dataLength | (lengthData[1] & 255);
+            } else if (dataLength == 127) {
+                indexFirstMask = 10;
+                byte[] lengthData = new byte[8];
+                lengthData[0] = (byte) inputStream.read();
+                lengthData[1] = (byte) inputStream.read();
+                lengthData[2] = (byte) inputStream.read();
+                lengthData[3] = (byte) inputStream.read();
+                lengthData[4] = (byte) inputStream.read();
+                lengthData[5] = (byte) inputStream.read();
+                lengthData[6] = (byte) inputStream.read();
+                lengthData[7] = (byte) inputStream.read();
+                dataLength = 0;
+
+                dataLength = dataLength | ((lengthData[0] & 255 << 56));
+                dataLength = dataLength | ((lengthData[1] & 255) << 48);
+                dataLength = dataLength | ((lengthData[2] & 255) << 40);
+                dataLength = dataLength | ((lengthData[3] & 255) << 32);
+                dataLength = dataLength | ((lengthData[4] & 255) << 24);
+                dataLength = dataLength | ((lengthData[5] & 255) << 16);
+                dataLength = dataLength | ((lengthData[6] & 255) << 8);
+                dataLength = dataLength | (lengthData[7] & 255);
+            }
+
+            byteArrayOutputStream = new ByteArrayOutputStream();
+            for (int i = 0; i < dataLength; i++) {
+                int currentByte = inputStream.read();
+                byteArrayOutputStream.write(currentByte);
+            }
+            Log.e(TAG, byteArrayOutputStream.toString());
+        } catch (IOException e) {
+            Log.e(TAG, "Error: Exception while receiving websocket frame.");
+        }
+        return byteArrayOutputStream == null ? null : byteArrayOutputStream.toByteArray();
+    }
+
 
 }

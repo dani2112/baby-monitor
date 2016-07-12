@@ -1,6 +1,5 @@
 package de.dk_s.babymonitor.communication.information;
 
-import android.renderscript.ScriptGroup;
 import android.util.Log;
 
 import java.io.IOException;
@@ -30,13 +29,13 @@ public class InformationServerClientHandler implements Runnable {
         try {
             inputStream = clientSocket.getInputStream();
             outputStream = clientSocket.getOutputStream();
-            boolean result = WsCommunicationHelper.handleWsHandshake(inputStream, outputStream);
+            boolean result = WsCommunicationHelper.handleWsHandshakeServer(inputStream, outputStream);
             if(!result) {
                 throw new Exception("Handshake failed on connection opening.");
             }
             boolean connectionActive = true;
             while(connectionActive) {
-                byte[] cmdData = WsCommunicationHelper.receiveData(inputStream);
+                byte[] cmdData = WsCommunicationHelper.receiveDataServer(inputStream);
                 String command = new String(cmdData, StandardCharsets.UTF_8);
                 Log.e(TAG,command);
 
