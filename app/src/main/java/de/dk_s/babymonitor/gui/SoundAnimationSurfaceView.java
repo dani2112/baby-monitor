@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 
 import de.dk_s.babymonitor.ChildActivity;
 import de.dk_s.babymonitor.ParentActivity;
+import de.dk_s.babymonitor.monitoring.AudioEventHistoryDataProvider;
 import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
 import de.dk_s.babymonitor.monitoring.MonitoringService;
 
@@ -43,12 +44,12 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
         init();
     }
 
-    private MonitoringService getMonitoringService() {
+    private AudioEventHistoryDataProvider getAudioEventHistoryDataProvider() {
         Context context = getContext();
         if (context instanceof ChildActivity) {
             return ((ChildActivity) context).getMonitoringService();
         } else if (context instanceof ParentActivity) {
-            return null;
+            return ((ParentActivity) context).getConnectionService();
         }
         return null;
     }
@@ -99,8 +100,8 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
             @Override
             public void run() {
                 while (isRunning) {
-                    MonitoringService monitoringService = getMonitoringService();
-                    Deque<BabyVoiceMonitor.AudioEvent> recentAudioEventList = monitoringService == null ? null : monitoringService.getRecentAudioEventList();
+                    AudioEventHistoryDataProvider audioEventHistoryDataProvider = getAudioEventHistoryDataProvider();
+                    Deque<BabyVoiceMonitor.AudioEvent> recentAudioEventList = audioEventHistoryDataProvider == null ? null : audioEventHistoryDataProvider.getRecentAudioEvents();
                     Canvas canvas = holder.lockCanvas();
                     drawAnimation(canvas, recentAudioEventList);
                     holder.unlockCanvasAndPost(canvas);

@@ -11,7 +11,7 @@ import java.util.Deque;
 import de.dk_s.babymonitor.communication.information.InformationServer;
 import de.dk_s.babymonitor.monitoring.db.DatabaseEventLogger;
 
-public class MonitoringService extends Service {
+public class MonitoringService extends Service implements AudioEventHistoryDataProvider {
 
     public class MonitoringServiceBinder extends Binder {
         public MonitoringService getService() {
@@ -84,7 +84,8 @@ public class MonitoringService extends Service {
         return START_STICKY;    // restart service if it is killed by system and resources become available
     }
 
-    public Deque<BabyVoiceMonitor.AudioEvent> getRecentAudioEventList() {
+    @Override
+    public Deque<BabyVoiceMonitor.AudioEvent> getRecentAudioEvents() {
         return babyVoiceMonitor == null ? null : babyVoiceMonitor.getRecentAudioEventList();
     }
 

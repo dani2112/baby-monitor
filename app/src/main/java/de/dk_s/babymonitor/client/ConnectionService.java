@@ -6,14 +6,18 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.widget.Toast;
 
+import java.util.Deque;
+
 import de.dk_s.babymonitor.communication.information.InformationServer;
 import de.dk_s.babymonitor.monitoring.AlarmController;
+import de.dk_s.babymonitor.monitoring.AudioEventHistoryDataProvider;
 import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
 import de.dk_s.babymonitor.monitoring.MicRecorder;
 import de.dk_s.babymonitor.monitoring.MonitoringService;
 import de.dk_s.babymonitor.monitoring.db.DatabaseEventLogger;
 
-public class ConnectionService extends Service {
+public class ConnectionService extends Service implements AudioEventHistoryDataProvider {
+
 
     public class ConnectionServiceBinder extends Binder {
         public ConnectionService getService() {
@@ -56,5 +60,10 @@ public class ConnectionService extends Service {
         isStarted = true;
 
         return START_STICKY;    // restart service if it is killed by system and resources become available
+    }
+
+    @Override
+    public Deque<BabyVoiceMonitor.AudioEvent> getRecentAudioEvents() {
+        return null;
     }
 }
