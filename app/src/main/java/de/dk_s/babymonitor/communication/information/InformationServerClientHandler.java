@@ -36,8 +36,11 @@ public class InformationServerClientHandler implements Runnable {
             boolean connectionActive = true;
             while(connectionActive) {
                 byte[] cmdData = WsCommunicationHelper.receiveDataServer(inputStream);
-                String command = new String(cmdData);
-                Log.e(TAG,command);
+                int commandValue = cmdData[0];
+                /* Respond on ping command */
+                if(commandValue == 0) {
+                    sendPingResponse(clientSocket);
+                }
 
             }
 
@@ -52,4 +55,16 @@ public class InformationServerClientHandler implements Runnable {
             }
         }
     }
+
+    private void sendPingResponse(Socket socket) {
+        try {
+            OutputStream outputStream = socket.getOutputStream();
+            byte command = 0;
+            byte[] sendData = new byte[] { command };
+            WsCommunicationHelper.sendDataServer(130, sendData, outputStream);
+        } catch (IOException e) {
+            Log.e(TAG, "Error: Exception while sending ping response in server.");
+        }
+    }
+
 }

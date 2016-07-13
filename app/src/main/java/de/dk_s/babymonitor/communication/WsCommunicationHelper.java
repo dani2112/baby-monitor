@@ -291,7 +291,6 @@ public class WsCommunicationHelper {
                 int decodedByte = inputStream.read() ^ maskBits[i % 4];
                 byteArrayOutputStream.write(decodedByte);
             }
-            Log.e(TAG, byteArrayOutputStream.toString());
         } catch (IOException e) {
             Log.e(TAG, "Error: Exception while receiving websocket frame.");
         }
@@ -388,7 +387,6 @@ public class WsCommunicationHelper {
                 int currentByte = inputStream.read();
                 byteArrayOutputStream.write(currentByte);
             }
-            Log.e(TAG, byteArrayOutputStream.toString());
         } catch (IOException e) {
             Log.e(TAG, "Error: Exception while receiving websocket frame.");
         }

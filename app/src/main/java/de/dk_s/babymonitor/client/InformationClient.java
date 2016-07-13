@@ -68,9 +68,13 @@ public class InformationClient {
 
     private void handleClientConnection() {
         clientSocket = tryConnect(serverAddress, 8083);
+        /* Connection not successful if clientSocket null */
+        if(clientSocket == null) {
+            return;
+        }
         while (isClientStarted) {
             try {
-
+                Log.e(TAG, "Connection successful");
             } catch (Exception e) {
                 Log.e(TAG, "Error: Exception in information server communication.");
             }
@@ -99,7 +103,7 @@ public class InformationClient {
             byte[] sendData = new byte[]{command};
             WsCommunicationHelper.sendDataClient(130, sendData, outputStream);
             byte[] receiveData = WsCommunicationHelper.receiveDataClient(inputStream);
-            if (receiveData[0] == 1) {
+            if (receiveData[0] == 0) {
                 commandSucessful = true;
             }
         } catch (IOException e) {
