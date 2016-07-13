@@ -59,7 +59,9 @@ public class InformationClient {
         }
         isClientStarted = false;
         try {
-            clientSocket.close();
+            if(clientSocket != null) {
+                clientSocket.close();
+            }
         } catch (IOException e) {
             Log.e(TAG, "Error: Exception while closing information server connection");
         }
