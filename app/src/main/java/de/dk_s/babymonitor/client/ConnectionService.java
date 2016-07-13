@@ -62,7 +62,7 @@ public class ConnectionService extends Service implements AudioEventHistoryDataP
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "connection service starting", Toast.LENGTH_SHORT).show();
         isStarted = true;
-        informationClient = new InformationClient("192.168.178.34");
+        informationClient = new InformationClient("192.168.178.31");
         informationClient.startClient();
         return START_STICKY;    // restart service if it is killed by system and resources become available
     }

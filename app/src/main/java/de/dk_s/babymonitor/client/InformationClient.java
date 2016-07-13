@@ -4,9 +4,13 @@ package de.dk_s.babymonitor.client;
 import android.util.Log;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import de.dk_s.babymonitor.communication.WsCommunicationHelper;
 
 public class InformationClient {
 
@@ -25,12 +29,15 @@ public class InformationClient {
     /* IP-Address that should be used for the connection */
     private String serverAddress;
 
+    /* Flag that indicates if information client is connected */
+    private boolean isClientConnected = false;
+
     public InformationClient(String serverAddress) {
         this.serverAddress = serverAddress;
     }
 
     public void startClient() {
-        if(isClientStarted) {
+        if (isClientStarted) {
             return;
         }
         isClientStarted = true;
@@ -47,7 +54,7 @@ public class InformationClient {
     }
 
     public void stopClient() {
-        if(!isClientStarted) {
+        if (!isClientStarted) {
             return;
         }
         isClientStarted = false;
@@ -60,14 +67,44 @@ public class InformationClient {
     }
 
     private void handleClientConnection() {
-        try {
-            clientSocket = new Socket(serverAddress, 8083);
-            while(isClientStarted) {
+        clientSocket = tryConnect(serverAddress, 8083);
+        while (isClientStarted) {
+            try {
 
+            } catch (Exception e) {
+                Log.e(TAG, "Error: Exception in information server communication.");
             }
-        } catch (IOException e) {
-            Log.e(TAG, "Error: Could not connect to information server.");
         }
     }
 
+    private Socket tryConnect(String ipAddress, int port) {
+        boolean connectionSucessful = false;
+        Socket socket = null;
+        try {
+            socket = new Socket(ipAddress, port);
+            WsCommunicationHelper.handleHandshakeClient(socket.getOutputStream());
+            connectionSucessful = performPing(socket);
+        } catch (IOException e) {
+            connectionSucessful = false;
+        }
+        return connectionSucessful ? socket : null;
+    }
+
+    private boolean performPing(Socket socket) {
+        boolean commandSucessful = false;
+        try {
+            OutputStream outputStream = socket.getOutputStream();
+            InputStream inputStream = socket.getInputStream();
+            byte command = 0;
+            byte[] sendData = new byte[]{command};
+            WsCommunicationHelper.sendDataClient(130, sendData, outputStream);
+            byte[] receiveData = WsCommunicationHelper.receiveDataClient(inputStream);
+            if (receiveData[0] == 1) {
+                commandSucessful = true;
+            }
+        } catch (IOException e) {
+            commandSucessful = false;
+        }
+        return commandSucessful;
+    }
 }

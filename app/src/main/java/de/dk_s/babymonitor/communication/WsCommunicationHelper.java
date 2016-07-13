@@ -331,9 +331,9 @@ public class WsCommunicationHelper {
         }
         try {
             byteArrayOutputStream.write(lengthNumber);
-            byte[] maskBytes = new byte[] { 7, 8, 9, 10 };
+            byte[] maskBytes = new byte[]{7, 8, 9, 10};
             byteArrayOutputStream.write(maskBytes);
-            for(int i = 0; i < data.length; i++) {
+            for (int i = 0; i < data.length; i++) {
                 int encodedByte = data[i] ^ maskBytes[i % 4];
                 byteArrayOutputStream.write(encodedByte);
             }
@@ -393,6 +393,16 @@ public class WsCommunicationHelper {
             Log.e(TAG, "Error: Exception while receiving websocket frame.");
         }
         return byteArrayOutputStream == null ? null : byteArrayOutputStream.toByteArray();
+    }
+
+    public static void handleHandshakeClient(OutputStream outputStream) {
+        String handshakeMessage = "PHONE\r\n\r\n";
+        try {
+            outputStream.write(handshakeMessage.getBytes());
+            outputStream.flush();
+        } catch (IOException e) {
+            Log.e(TAG, "Error: Exception while performing handshake in client.");
+        }
     }
 
 

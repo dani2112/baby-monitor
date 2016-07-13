@@ -36,7 +36,7 @@ public class InformationServerClientHandler implements Runnable {
             boolean connectionActive = true;
             while(connectionActive) {
                 byte[] cmdData = WsCommunicationHelper.receiveDataServer(inputStream);
-                String command = new String(cmdData, StandardCharsets.UTF_8);
+                String command = new String(cmdData);
                 Log.e(TAG,command);
 
             }
