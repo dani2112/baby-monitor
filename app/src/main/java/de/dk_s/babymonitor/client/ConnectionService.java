@@ -62,14 +62,14 @@ public class ConnectionService extends Service implements AudioEventHistoryDataP
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "connection service starting", Toast.LENGTH_SHORT).show();
         isStarted = true;
-        informationClient = new InformationClient("192.168.178.31");
+        informationClient = new InformationClient("127.0.0.1");
         informationClient.startClient();
         return START_STICKY;    // restart service if it is killed by system and resources become available
     }
 
     @Override
     public Deque<BabyVoiceMonitor.AudioEvent> getRecentAudioEvents() {
-        return null;
+        return informationClient != null ? informationClient.getRecentAudioEvents() : null;
     }
 
     @Override

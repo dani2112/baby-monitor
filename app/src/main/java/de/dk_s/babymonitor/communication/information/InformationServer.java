@@ -9,6 +9,9 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import de.dk_s.babymonitor.client.InformationClient;
+import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
+
 public class InformationServer {
 
     /* Tag for debugging outputs */
@@ -26,6 +29,12 @@ public class InformationServer {
     /* ExecutorService that runs the client connections */
     private ExecutorService clientConnectionExecutorService;
 
+    /* BabyVoiceMonitor object that contains necessary information */
+    private BabyVoiceMonitor babyVoiceMonitor;
+
+    public InformationServer(BabyVoiceMonitor babyVoiceMonitor) {
+        this.babyVoiceMonitor = babyVoiceMonitor;
+    }
 
 
     public void startServer() {
@@ -76,7 +85,7 @@ public class InformationServer {
                 Socket clientSocket = serverSocket.accept();
 
                 /* Create new client object */
-                InformationServerClientHandler informationServerClientHandler = new InformationServerClientHandler(clientSocket);
+                InformationServerClientHandler informationServerClientHandler = new InformationServerClientHandler(clientSocket, babyVoiceMonitor);
 
                 /* Run client connection  */
                 clientConnectionExecutorService.submit(informationServerClientHandler);

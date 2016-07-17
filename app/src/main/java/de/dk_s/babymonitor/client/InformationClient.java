@@ -100,7 +100,6 @@ public class InformationClient {
         }
         while (isClientStarted) {
             try {
-                Log.e(TAG, "Connection successful");
                 if(isRecentAudioEventHistoryRequested) {
                     reventAudioEventHistoryDequeue = getReventAudioEventHistoryRemote(clientSocket);
                     isRecentAudioEventHistoryRequestedSemaphore.release();

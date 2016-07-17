@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
 import de.dk_s.babymonitor.communication.WsCommunicationHelper;
+import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
 
 public class InformationServerClientHandler implements Runnable {
 
@@ -19,8 +20,11 @@ public class InformationServerClientHandler implements Runnable {
     private InputStream inputStream = null;
     private OutputStream outputStream = null;
 
-    public InformationServerClientHandler(Socket clientSocket) {
+    private BabyVoiceMonitor babyVoiceMonitor = null;
+
+    public InformationServerClientHandler(Socket clientSocket, BabyVoiceMonitor babyVoiceMonitor) {
         this.clientSocket = clientSocket;
+        this.babyVoiceMonitor = babyVoiceMonitor;
     }
 
 
@@ -36,10 +40,15 @@ public class InformationServerClientHandler implements Runnable {
             boolean connectionActive = true;
             while(connectionActive) {
                 byte[] cmdData = WsCommunicationHelper.receiveDataServer(inputStream);
+                Log.e(TAG, "RECEIVE");
                 int commandValue = cmdData[0];
                 /* Respond on ping command */
                 if(commandValue == 0) {
+                    Log.e(TAG, "Ping command");
                     sendPingResponse(clientSocket);
+                } else if (commandValue == 1) {
+                    Log.e(TAG, "Audio event history command");
+                    sendAudioEventHistoryResponse(clientSocket);
                 }
 
             }
@@ -64,6 +73,17 @@ public class InformationServerClientHandler implements Runnable {
             WsCommunicationHelper.sendDataServer(130, sendData, outputStream);
         } catch (IOException e) {
             Log.e(TAG, "Error: Exception while sending ping response in server.");
+        }
+    }
+
+    private void sendAudioEventHistoryResponse(Socket socket) {
+        try {
+            OutputStream outputStream = socket.getOutputStream();
+            byte command = 1;
+            byte[] sendData = new byte[] { command };
+            WsCommunicationHelper.sendDataServer(130, sendData, outputStream);
+        } catch (IOException e) {
+            Log.e(TAG, "Error: Exception while sending audio event history response in server.");
         }
     }
 

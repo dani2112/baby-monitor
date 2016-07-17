@@ -75,7 +75,7 @@ public class MonitoringService extends Service implements AudioEventHistoryDataP
             alarmController = new AlarmController(babyVoiceMonitor, new DatabaseEventLogger(getApplicationContext()), getApplicationContext());
         }
         if (informationServer == null) {
-            informationServer = new InformationServer();
+            informationServer = new InformationServer(babyVoiceMonitor);
         }
         micRecorder.startRecording();
         babyVoiceMonitor.startMonitoring();
