@@ -101,7 +101,7 @@ public class InformationClient {
         while (isClientStarted) {
             try {
                 if(isRecentAudioEventHistoryRequested) {
-                    reventAudioEventHistoryDequeue = getReventAudioEventHistoryRemote(clientSocket);
+                    reventAudioEventHistoryDequeue = getRecentAudioEventHistoryRemote(clientSocket);
                     isRecentAudioEventHistoryRequestedSemaphore.release();
                 }
             } catch (Exception e) {
@@ -141,7 +141,8 @@ public class InformationClient {
         return commandSucessful;
     }
 
-    private Deque<BabyVoiceMonitor.AudioEvent> getReventAudioEventHistoryRemote(Socket socket) {
+    private Deque<BabyVoiceMonitor.AudioEvent> getRecentAudioEventHistoryRemote(Socket socket) {
+        Log.e(TAG, "REQUESTED");
         Deque<BabyVoiceMonitor.AudioEvent> audioEventDequeue = new LinkedList<>();
         try {
             OutputStream outputStream = socket.getOutputStream();
@@ -154,7 +155,7 @@ public class InformationClient {
                 /* interpret received data 4 bytes type, 8 bytes timestamp, 4 bytes audio level */
                 ByteBuffer byteBuffer = ByteBuffer.wrap(receiveData);
                 int historyLength = (receiveData.length - 1) / 16;
-                for(int i = 0; i < historyLength; i++) {
+                for(int i = 1; i < historyLength; i++) {
                     int eventType = byteBuffer.getInt(i);
                     long timeStamp = byteBuffer.getLong(i + 4);
                     float audioLevel = byteBuffer.getFloat(i + 12);

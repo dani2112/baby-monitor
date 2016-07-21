@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -17,7 +18,6 @@ import de.dk_s.babymonitor.ChildActivity;
 import de.dk_s.babymonitor.ParentActivity;
 import de.dk_s.babymonitor.monitoring.AudioEventHistoryDataProvider;
 import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
-import de.dk_s.babymonitor.monitoring.MonitoringService;
 
 
 public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
@@ -102,8 +102,11 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
                 while (isRunning) {
                     AudioEventHistoryDataProvider audioEventHistoryDataProvider = getAudioEventHistoryDataProvider();
                     Deque<BabyVoiceMonitor.AudioEvent> recentAudioEventList = audioEventHistoryDataProvider == null ? null : audioEventHistoryDataProvider.getRecentAudioEvents();
+                    Log.e(TAG, String.valueOf(recentAudioEventList));
                     Canvas canvas = holder.lockCanvas();
-                    drawAnimation(canvas, recentAudioEventList);
+                    if (recentAudioEventList != null) {
+                        drawAnimation(canvas, recentAudioEventList);
+                    }
                     holder.unlockCanvasAndPost(canvas);
                     try {
                         Thread.sleep(500);

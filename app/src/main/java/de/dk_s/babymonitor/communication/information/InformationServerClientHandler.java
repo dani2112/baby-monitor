@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Deque;
 
 import de.dk_s.babymonitor.communication.WsCommunicationHelper;
 import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
@@ -80,8 +82,19 @@ public class InformationServerClientHandler implements Runnable {
         try {
             OutputStream outputStream = socket.getOutputStream();
             byte command = 1;
-            byte[] sendData = new byte[] { command };
-            WsCommunicationHelper.sendDataServer(130, sendData, outputStream);
+            Deque<BabyVoiceMonitor.AudioEvent> recentAudioEventList = babyVoiceMonitor.getRecentAudioEventList();
+            int audioEventLength = recentAudioEventList.size();
+            byte[] sendData = new byte[1 + audioEventLength * 16];
+            ByteBuffer sendDataBuffer = ByteBuffer.wrap(sendData);
+            sendData[0] = command;
+            int index = 1;
+            for(BabyVoiceMonitor.AudioEvent audioEvent : recentAudioEventList) {
+                sendDataBuffer.putInt(index, audioEvent.getEventType());
+                sendDataBuffer.putLong(index + 4, audioEvent.getTimeStamp());
+                sendDataBuffer.putFloat(index + 12, audioEvent.getAudioLevel());
+                index++;
+            }
+            WsCommunicationHelper.sendDataServer(130, sendDataBuffer.array(), outputStream);
         } catch (IOException e) {
             Log.e(TAG, "Error: Exception while sending audio event history response in server.");
         }
