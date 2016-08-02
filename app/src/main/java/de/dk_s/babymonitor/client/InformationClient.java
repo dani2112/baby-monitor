@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import de.dk_s.babymonitor.communication.WsCommunicationHelper;
 import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
@@ -64,7 +65,6 @@ public class InformationClient {
                 handleClientConnection();
             }
         });
-
     }
 
     public void stopClient() {
@@ -85,7 +85,7 @@ public class InformationClient {
     public Deque<BabyVoiceMonitor.AudioEvent> getRecentAudioEvents() {
         isRecentAudioEventHistoryRequested = true;
         try {
-            isRecentAudioEventHistoryRequestedSemaphore.acquire();
+            isRecentAudioEventHistoryRequestedSemaphore.tryAcquire(500, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Log.e(TAG, "Error: Interruped while getting recent audio events over remote");
         }
@@ -101,6 +101,7 @@ public class InformationClient {
         while (isClientStarted) {
             try {
                 if(isRecentAudioEventHistoryRequested) {
+                    isRecentAudioEventHistoryRequested = false;
                     reventAudioEventHistoryDequeue = getRecentAudioEventHistoryRemote(clientSocket);
                     isRecentAudioEventHistoryRequestedSemaphore.release();
                 }
@@ -142,7 +143,6 @@ public class InformationClient {
     }
 
     private Deque<BabyVoiceMonitor.AudioEvent> getRecentAudioEventHistoryRemote(Socket socket) {
-        Log.e(TAG, "REQUESTED");
         Deque<BabyVoiceMonitor.AudioEvent> audioEventDequeue = new LinkedList<>();
         try {
             OutputStream outputStream = socket.getOutputStream();
