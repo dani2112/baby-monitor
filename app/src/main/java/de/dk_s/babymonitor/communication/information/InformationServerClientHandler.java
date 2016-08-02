@@ -4,12 +4,15 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Deque;
 
+import de.dk_s.babymonitor.communication.HttpCommunicationHelper;
 import de.dk_s.babymonitor.communication.WsCommunicationHelper;
 import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
 
@@ -35,26 +38,25 @@ public class InformationServerClientHandler implements Runnable {
         try {
             inputStream = clientSocket.getInputStream();
             outputStream = clientSocket.getOutputStream();
-            boolean result = WsCommunicationHelper.handleWsHandshakeServer(inputStream, outputStream);
-            if(!result) {
-                throw new Exception("Handshake failed on connection opening.");
-            }
-            boolean connectionActive = true;
-            while(connectionActive) {
-                byte[] cmdData = WsCommunicationHelper.receiveDataServer(inputStream);
-                Log.e(TAG, "RECEIVE");
-                int commandValue = cmdData[0];
-                /* Respond on ping command */
-                if(commandValue == 0) {
-                    Log.e(TAG, "Ping command");
-                    sendPingResponse(clientSocket);
-                } else if (commandValue == 1) {
-                    Log.e(TAG, "Audio event history command");
-                    sendAudioEventHistoryResponse(clientSocket);
-                }
 
+            String httpRequest = HttpCommunicationHelper.readHttpRequestResponse(new InputStreamReader(inputStream));
+            String firstLine = httpRequest.split("\r\n")[0];
+            String[] firstLineSplit = firstLine.split(" ");
+            String url = null;
+            if(firstLineSplit.length >= 3) {
+                url = firstLineSplit[1];
+            } else {
+                throw new Exception("Error: No valid request");
             }
-
+            if(url.equals("/history")) {
+                String response = generateAudioEventHistoryResponse();
+                HttpCommunicationHelper.sendHttpResponse(200, "OK", response, clientSocket);
+            } else {
+                throw new Exception("Error: No valid URL.");
+            }
+            inputStream.close();
+            outputStream.close();
+            clientSocket.close();
         } catch (Exception e) {
             Log.e(TAG, "Error: Exception while handling information retreiving client.");
             try {
@@ -67,37 +69,19 @@ public class InformationServerClientHandler implements Runnable {
         }
     }
 
-    private void sendPingResponse(Socket socket) {
-        try {
-            OutputStream outputStream = socket.getOutputStream();
-            byte command = 0;
-            byte[] sendData = new byte[] { command };
-            WsCommunicationHelper.sendDataServer(130, sendData, outputStream);
-        } catch (IOException e) {
-            Log.e(TAG, "Error: Exception while sending ping response in server.");
-        }
-    }
 
-    private void sendAudioEventHistoryResponse(Socket socket) {
-        try {
-            OutputStream outputStream = socket.getOutputStream();
-            byte command = 1;
-            Deque<BabyVoiceMonitor.AudioEvent> recentAudioEventList = babyVoiceMonitor.getRecentAudioEventList();
-            int audioEventLength = recentAudioEventList.size();
-            byte[] sendData = new byte[1 + audioEventLength * 16];
-            ByteBuffer sendDataBuffer = ByteBuffer.wrap(sendData);
-            sendData[0] = command;
-            int index = 1;
-            for(BabyVoiceMonitor.AudioEvent audioEvent : recentAudioEventList) {
-                sendDataBuffer.putInt(index, audioEvent.getEventType());
-                sendDataBuffer.putLong(index + 4, audioEvent.getTimeStamp());
-                sendDataBuffer.putFloat(index + 12, audioEvent.getAudioLevel());
-                index++;
-            }
-            WsCommunicationHelper.sendDataServer(130, sendDataBuffer.array(), outputStream);
-        } catch (IOException e) {
-            Log.e(TAG, "Error: Exception while sending audio event history response in server.");
+    private String generateAudioEventHistoryResponse() {
+        StringBuilder response = new StringBuilder();
+        Deque<BabyVoiceMonitor.AudioEvent> recentAudioEventList = babyVoiceMonitor.getRecentAudioEventList();
+        for(BabyVoiceMonitor.AudioEvent audioEvent : recentAudioEventList) {
+            response.append(audioEvent.getEventType());
+            response.append(",");
+            response.append(audioEvent.getTimeStamp());
+            response.append(",");
+            response.append(audioEvent.getAudioLevel());
+            response.append(";");
         }
+        return response.toString();
     }
 
 }
