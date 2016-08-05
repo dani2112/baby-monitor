@@ -100,10 +100,8 @@ public class SoundAnimationSurfaceView extends SurfaceView implements SurfaceHol
             @Override
             public void run() {
                 while (isRunning) {
-                    Log.e(TAG, "Request started");
                     AudioEventHistoryDataProvider audioEventHistoryDataProvider = getAudioEventHistoryDataProvider();
                     Deque<BabyVoiceMonitor.AudioEvent> recentAudioEventList = audioEventHistoryDataProvider == null ? null : audioEventHistoryDataProvider.getRecentAudioEvents();
-                    Log.e(TAG, "Received List");
                     Canvas canvas = holder.lockCanvas();
                     if (recentAudioEventList != null) {
                         drawAnimation(canvas, recentAudioEventList);
