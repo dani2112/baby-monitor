@@ -1,6 +1,7 @@
 package de.dk_s.babymonitor.communication.information;
 
 
+import android.content.Context;
 import android.util.Log;
 
 import java.io.IOException;
@@ -32,8 +33,12 @@ public class InformationServer {
     /* BabyVoiceMonitor object that contains necessary information */
     private BabyVoiceMonitor babyVoiceMonitor;
 
-    public InformationServer(BabyVoiceMonitor babyVoiceMonitor) {
+    /* Context object for accessing database */
+    private Context context;
+
+    public InformationServer(BabyVoiceMonitor babyVoiceMonitor, Context context) {
         this.babyVoiceMonitor = babyVoiceMonitor;
+        this.context = context;
     }
 
 
@@ -85,7 +90,7 @@ public class InformationServer {
                 Socket clientSocket = serverSocket.accept();
 
                 /* Create new client object */
-                InformationServerClientHandler informationServerClientHandler = new InformationServerClientHandler(clientSocket, babyVoiceMonitor);
+                InformationServerClientHandler informationServerClientHandler = new InformationServerClientHandler(clientSocket, babyVoiceMonitor, context);
 
                 /* Run client connection  */
                 clientConnectionExecutorService.submit(informationServerClientHandler);
