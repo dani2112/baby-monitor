@@ -6,14 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.Reader;
 import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Deque;
 
 import de.dk_s.babymonitor.communication.HttpCommunicationHelper;
-import de.dk_s.babymonitor.communication.WsCommunicationHelper;
 import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
 
 public class InformationServerClientHandler implements Runnable {
@@ -39,7 +35,7 @@ public class InformationServerClientHandler implements Runnable {
             inputStream = clientSocket.getInputStream();
             outputStream = clientSocket.getOutputStream();
 
-            String httpRequest = HttpCommunicationHelper.readHttpRequestResponse(new InputStreamReader(inputStream));
+            String httpRequest = HttpCommunicationHelper.readHttpRequestResponseHeader(new InputStreamReader(inputStream));
             String firstLine = httpRequest.split("\r\n")[0];
             String[] firstLineSplit = firstLine.split(" ");
             String url = null;

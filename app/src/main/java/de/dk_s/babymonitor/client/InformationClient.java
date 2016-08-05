@@ -4,18 +4,14 @@ package de.dk_s.babymonitor.client;
 import android.util.Log;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.InputStreamReader;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
-import de.dk_s.babymonitor.communication.WsCommunicationHelper;
+import de.dk_s.babymonitor.communication.HttpCommunicationHelper;
 import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
 
 public class InformationClient {
@@ -29,20 +25,8 @@ public class InformationClient {
     /* ExecutorService that runs communication thread */
     private ExecutorService clientExecutorService;
 
-    /* Socket for connecting to the Server */
-    private Socket clientSocket;
-
     /* IP-Address that should be used for the connection */
     private String serverAddress;
-
-    /* Flag that indicates if information client is connected */
-    private boolean isClientConnected = false;
-
-    /* Flag that indicates if audio event history is requested */
-    private boolean isRecentAudioEventHistoryRequested = false;
-
-    /* Semaphore that is used for signaling that new recent audio event data is available */
-    private Semaphore isRecentAudioEventHistoryRequestedSemaphore = new Semaphore(0);
 
     /* Recent audio event history queue that was retreived over network */
     private Deque<BabyVoiceMonitor.AudioEvent> reventAudioEventHistoryDequeue = null;
@@ -72,99 +56,57 @@ public class InformationClient {
             return;
         }
         isClientStarted = false;
-        try {
-            if(clientSocket != null) {
-                clientSocket.close();
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "Error: Exception while closing information server connection");
-        }
         clientExecutorService.shutdownNow();
     }
 
     public Deque<BabyVoiceMonitor.AudioEvent> getRecentAudioEvents() {
-        isRecentAudioEventHistoryRequested = true;
-        try {
-            isRecentAudioEventHistoryRequestedSemaphore.tryAcquire(500, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            Log.e(TAG, "Error: Interruped while getting recent audio events over remote");
-        }
         return reventAudioEventHistoryDequeue;
     }
 
     private void handleClientConnection() {
-        clientSocket = tryConnect(serverAddress, 8083);
-        /* Connection not successful if clientSocket null */
-        if(clientSocket == null) {
-            return;
-        }
         while (isClientStarted) {
             try {
-                if(isRecentAudioEventHistoryRequested) {
-                    isRecentAudioEventHistoryRequested = false;
-                    reventAudioEventHistoryDequeue = getRecentAudioEventHistoryRemote(clientSocket);
-                    isRecentAudioEventHistoryRequestedSemaphore.release();
-                }
+                Thread.sleep(1000);
+                reventAudioEventHistoryDequeue = getRecentAudioEventHistoryRemote();
             } catch (Exception e) {
-                Log.e(TAG, "Error: Exception in information server communication.");
+                Log.e(TAG, "Error: Exception while receiving information.");
             }
         }
     }
 
     private Socket tryConnect(String ipAddress, int port) {
-        boolean connectionSucessful = false;
+        boolean connectionSucessful;
         Socket socket = null;
         try {
             socket = new Socket(ipAddress, port);
-            WsCommunicationHelper.handleHandshakeClient(socket.getOutputStream());
-            connectionSucessful = performPing(socket);
+            connectionSucessful = true;
         } catch (IOException e) {
             connectionSucessful = false;
         }
         return connectionSucessful ? socket : null;
     }
 
-    private boolean performPing(Socket socket) {
-        boolean commandSucessful = false;
-        try {
-            OutputStream outputStream = socket.getOutputStream();
-            InputStream inputStream = socket.getInputStream();
-            byte command = 0;
-            byte[] sendData = new byte[]{command};
-            WsCommunicationHelper.sendDataClient(130, sendData, outputStream);
-            byte[] receiveData = WsCommunicationHelper.receiveDataClient(inputStream);
-            if (receiveData[0] == 0) {
-                commandSucessful = true;
-            }
-        } catch (IOException e) {
-            commandSucessful = false;
+    private Deque<BabyVoiceMonitor.AudioEvent> getRecentAudioEventHistoryRemote() {
+        Socket clientSocket = tryConnect(serverAddress, 8083);
+        if(clientSocket == null) {
+            return null;
         }
-        return commandSucessful;
-    }
-
-    private Deque<BabyVoiceMonitor.AudioEvent> getRecentAudioEventHistoryRemote(Socket socket) {
         Deque<BabyVoiceMonitor.AudioEvent> audioEventDequeue = new LinkedList<>();
         try {
-            OutputStream outputStream = socket.getOutputStream();
-            InputStream inputStream = socket.getInputStream();
-            byte command = 1;
-            byte[] sendData = new byte[]{command};
-            WsCommunicationHelper.sendDataClient(130, sendData, outputStream);
-            byte[] receiveData = WsCommunicationHelper.receiveDataClient(inputStream);
-            if (receiveData[0] == 1) {
-                /* interpret received data 4 bytes type, 8 bytes timestamp, 4 bytes audio level */
-                ByteBuffer byteBuffer = ByteBuffer.wrap(receiveData);
-                int historyLength = (receiveData.length - 1) / 16;
-                for(int i = 1; i < historyLength; i++) {
-                    int eventType = byteBuffer.getInt(i);
-                    long timeStamp = byteBuffer.getLong(i + 4);
-                    float audioLevel = byteBuffer.getFloat(i + 12);
-                    BabyVoiceMonitor.AudioEvent audioEvent = new BabyVoiceMonitor.AudioEvent(eventType, timeStamp, audioLevel);
-                    audioEventDequeue.add(audioEvent);
-                }
+            HttpCommunicationHelper.sendHttpGetRequest("/history", clientSocket.getInetAddress().getHostName(), clientSocket);
+            String response = HttpCommunicationHelper.readHttpReponseBodyAsString(clientSocket);
+            clientSocket.close();
+            String[] reponseSplit = response.split(";");
+            for(String audioEventValues : reponseSplit) {
+                String[] valuesSplit = audioEventValues.split(",");
+                int eventType = Integer.parseInt(valuesSplit[0]);
+                long timeStamp = Long.parseLong(valuesSplit[1]);
+                float audioLevel = Float.parseFloat(valuesSplit[2]);
+                audioEventDequeue.add(new BabyVoiceMonitor.AudioEvent(eventType, timeStamp, audioLevel));
             }
+            reventAudioEventHistoryDequeue = audioEventDequeue;
         } catch (IOException e) {
-
+            Log.e(TAG, "Error: Exception while retrieving audio event history.");
         }
         return audioEventDequeue;
     }

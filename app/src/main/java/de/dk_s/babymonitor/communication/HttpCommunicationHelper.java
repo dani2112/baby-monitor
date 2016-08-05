@@ -4,6 +4,8 @@ package de.dk_s.babymonitor.communication;
 import android.util.Log;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.net.Socket;
@@ -15,7 +17,8 @@ public class HttpCommunicationHelper {
 
     private final static char[] httpRequestLimiter = new char[]{'\r', '\n', '\r', '\n'};
 
-    public static String readHttpRequestResponse(Reader reader) {
+    /* ------------------------------ Server ------------------------------ */
+    public static String readHttpRequestResponseHeader(Reader reader) {
         /* Read whole request */
         boolean isRequestRead = false;
         StringBuilder request = new StringBuilder();
@@ -56,5 +59,38 @@ public class HttpCommunicationHelper {
         outputStream.flush();
     }
 
+    /* ------------------------------ Client ------------------------------ */
+    public static void sendHttpGetRequest(String url, String host, Socket socket) throws IOException {
+        StringBuilder request = new StringBuilder();
+        request.append("GET ");
+        request.append(url);
+        request.append(" HTTP/1.1\r\nHost: ");
+        request.append(host);
+        request.append("\r\n\r\n");
+        OutputStream outputStream = socket.getOutputStream();
+        outputStream.write(request.toString().getBytes());
+        outputStream.flush();
+    }
+
+    public static String readHttpReponseBodyAsString(Socket socket) throws IOException {
+        InputStream inputStream = socket.getInputStream();
+        Reader inputStreamReader = new InputStreamReader(inputStream);
+        String header = readHttpRequestResponseHeader(inputStreamReader);
+        String[] lineSplit = header.split("\r\n");
+        int contentLength = 0;
+        for (String line : lineSplit) {
+            String[] keyValuePair = line.split(":");
+            if(keyValuePair[0].equals("Content-Length")) {
+                contentLength = Integer.parseInt(keyValuePair[1].trim());
+            }
+        }
+        StringBuilder body = new StringBuilder();
+        for(int i = 0; i < contentLength; i++) {
+            int currentByte = inputStreamReader.read();
+            char currentCharacter = (char) currentByte;
+            body.append(currentCharacter);
+        }
+        return body.toString();
+    }
 
 }
