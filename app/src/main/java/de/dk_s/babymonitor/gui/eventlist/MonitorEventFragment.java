@@ -152,13 +152,17 @@ public class MonitorEventFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        LocalBroadcastManager.getInstance(this.getActivity()).registerReceiver(broadcastReceiver, new IntentFilter(AlarmController.EVENT_DB_UPDATED));
+        if(this.getActivity() instanceof ChildActivity) {
+            LocalBroadcastManager.getInstance(this.getActivity()).registerReceiver(broadcastReceiver, new IntentFilter(AlarmController.EVENT_DB_UPDATED));
+        }
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        LocalBroadcastManager.getInstance(this.getActivity()).unregisterReceiver(broadcastReceiver);
+        if(this.getActivity() instanceof ChildActivity) {
+            LocalBroadcastManager.getInstance(this.getActivity()).unregisterReceiver(broadcastReceiver);
+        }
     }
 
     /**
