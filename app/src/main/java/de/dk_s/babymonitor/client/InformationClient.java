@@ -4,10 +4,10 @@ package de.dk_s.babymonitor.client;
 import android.util.Log;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -29,7 +29,10 @@ public class InformationClient {
     private String serverAddress;
 
     /* Recent audio event history queue that was retreived over network */
-    private Deque<BabyVoiceMonitor.AudioEvent> reventAudioEventHistoryDequeue = null;
+    private Deque<BabyVoiceMonitor.AudioEvent> recentAudioEventHistoryDequeue = null;
+
+    /* Event list that is retrieved from the database of remote device */
+    private List<BabyVoiceMonitor.AudioEvent> eventHistoryList = null;
 
     public InformationClient(String serverAddress) {
         this.serverAddress = serverAddress;
@@ -60,14 +63,19 @@ public class InformationClient {
     }
 
     public Deque<BabyVoiceMonitor.AudioEvent> getRecentAudioEvents() {
-        return reventAudioEventHistoryDequeue;
+        return recentAudioEventHistoryDequeue;
+    }
+
+    public List<BabyVoiceMonitor.AudioEvent> getEventHistory() {
+        return eventHistoryList;
     }
 
     private void handleClientConnection() {
         while (isClientStarted) {
             try {
                 Thread.sleep(1000);
-                reventAudioEventHistoryDequeue = getRecentAudioEventHistoryRemote();
+                recentAudioEventHistoryDequeue = getRecentAudioEventHistoryRemote();
+                eventHistoryList = getEventHistoryRemote();
             } catch (Exception e) {
                 Log.e(TAG, "Error: Exception while receiving information.");
             }
@@ -104,10 +112,34 @@ public class InformationClient {
                 float audioLevel = Float.parseFloat(valuesSplit[2]);
                 audioEventDequeue.add(new BabyVoiceMonitor.AudioEvent(eventType, timeStamp, audioLevel));
             }
-            reventAudioEventHistoryDequeue = audioEventDequeue;
+            recentAudioEventHistoryDequeue = audioEventDequeue;
         } catch (IOException e) {
             Log.e(TAG, "Error: Exception while retrieving audio event history.");
         }
         return audioEventDequeue;
+    }
+
+    private List<BabyVoiceMonitor.AudioEvent> getEventHistoryRemote() {
+        Socket clientSocket = tryConnect(serverAddress, 8083);
+        if(clientSocket == null) {
+            return null;
+        }
+        List<BabyVoiceMonitor.AudioEvent> eventHistoryList = new LinkedList<>();
+        try {
+            HttpCommunicationHelper.sendHttpGetRequest("/events", clientSocket.getInetAddress().getHostName(), clientSocket);
+            String response = HttpCommunicationHelper.readHttpReponseBodyAsString(clientSocket);
+            clientSocket.close();
+            String[] reponseSplit = response.split(";");
+            for(String audioEventValues : reponseSplit) {
+                String[] valuesSplit = audioEventValues.split(",");
+                int eventType = Integer.parseInt(valuesSplit[0]);
+                long timeStamp = Long.parseLong(valuesSplit[1]);
+                eventHistoryList.add(new BabyVoiceMonitor.AudioEvent(eventType, timeStamp));
+            }
+            this.eventHistoryList = eventHistoryList;
+        } catch (IOException e) {
+            Log.e(TAG, "Error: Exception while retrieving audio event history.");
+        }
+        return null;
     }
 }

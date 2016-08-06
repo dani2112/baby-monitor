@@ -74,11 +74,20 @@ public class ConnectionService extends Service implements AudioEventHistoryDataP
 
     @Override
     public List<BabyVoiceMonitor.AudioEvent> get24HoursAudioEvents() {
-        return null;
+        return informationClient != null ? informationClient.getEventHistory() : null;
     }
 
     @Override
     public BabyVoiceMonitor.AudioEvent getLastAudioEvent() {
-        return null;
+        if(informationClient != null) {
+            List<BabyVoiceMonitor.AudioEvent> eventHistoryList = informationClient.getEventHistory();
+            if(eventHistoryList != null && eventHistoryList.size() > 0) {
+                return eventHistoryList.get(0);
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 }
