@@ -1,6 +1,9 @@
 package de.dk_s.babymonitor.client;
 
 
+import android.content.Context;
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import java.io.IOException;
@@ -19,6 +22,9 @@ public class InformationClient {
     /* Tag for debugging outputs */
     private static final String TAG = "InformationClient";
 
+    /* String constant for broadcasting information update */
+    static final public String EVENT_INFORMATION_UPDATED = "de.dk_s.babymonitor.client.InformationClient.EventInformationUpdated";
+
     /* Flag that indicates if client is started */
     private boolean isClientStarted = false;
 
@@ -34,8 +40,15 @@ public class InformationClient {
     /* Event list that is retrieved from the database of remote device */
     private List<BabyVoiceMonitor.AudioEvent> eventHistoryList = null;
 
-    public InformationClient(String serverAddress) {
+    /* Context that is needed for broadcasting */
+    private Context context;
+
+    /* Broadcast manager that is needed for broadcasting event list changes */
+    private LocalBroadcastManager localBroadcastManager = null;
+
+    public InformationClient(String serverAddress, Context context) {
         this.serverAddress = serverAddress;
+        this.context = context;
     }
 
     public void startClient() {
@@ -43,6 +56,8 @@ public class InformationClient {
             return;
         }
         isClientStarted = true;
+
+        localBroadcastManager = LocalBroadcastManager.getInstance(context);
 
         clientExecutorService = Executors.newSingleThreadExecutor();
 
@@ -59,6 +74,9 @@ public class InformationClient {
             return;
         }
         isClientStarted = false;
+
+        localBroadcastManager = null;
+
         clientExecutorService.shutdownNow();
     }
 
@@ -140,5 +158,12 @@ public class InformationClient {
             Log.e(TAG, "Error: Exception while retrieving audio event history.");
         }
         return eventHistoryList;
+    }
+
+    private void broadcastEventHistoryChanged() {
+        if(localBroadcastManager != null) {
+            Intent intent = new Intent(EVENT_INFORMATION_UPDATED);
+            localBroadcastManager.sendBroadcast(intent);
+        }
     }
 }

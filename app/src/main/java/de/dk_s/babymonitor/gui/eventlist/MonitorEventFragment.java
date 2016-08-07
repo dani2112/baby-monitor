@@ -82,6 +82,8 @@ public class MonitorEventFragment extends Fragment {
 
     private BroadcastReceiver broadcastReceiver = null;
 
+    private BroadcastReceiver remoteDataBroadcastReceiver = null;
+
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -117,6 +119,20 @@ public class MonitorEventFragment extends Fragment {
                             .getColumnIndex(DatabaseEventLoggerContract.LogEvent.COLUMN_NAME_TIMESTAMP));
                     if (myMonitorEventRecyclerViewAdapter != null) {
                         myMonitorEventRecyclerViewAdapter.addEventTop(new BabyVoiceMonitor.AudioEvent(eventType, timestamp));
+                        recyclerView.smoothScrollToPosition(0);
+                    }
+                }
+            }
+        };
+
+        remoteDataBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                EventHistoryDataProvider eventHistoryDataProvider = getEventHistoryDataProvider();
+                if(eventHistoryDataProvider != null) {
+                    BabyVoiceMonitor.AudioEvent audioEvent = eventHistoryDataProvider.getLastAudioEvent();
+                    if (myMonitorEventRecyclerViewAdapter != null && audioEvent != null) {
+                        myMonitorEventRecyclerViewAdapter.addEventTop(audioEvent);
                         recyclerView.smoothScrollToPosition(0);
                     }
                 }
