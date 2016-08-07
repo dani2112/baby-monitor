@@ -136,10 +136,9 @@ public class InformationClient {
                 long timeStamp = Long.parseLong(valuesSplit[1]);
                 eventHistoryList.add(new BabyVoiceMonitor.AudioEvent(eventType, timeStamp));
             }
-            this.eventHistoryList = eventHistoryList;
         } catch (IOException e) {
             Log.e(TAG, "Error: Exception while retrieving audio event history.");
         }
-        return null;
+        return eventHistoryList;
     }
 }

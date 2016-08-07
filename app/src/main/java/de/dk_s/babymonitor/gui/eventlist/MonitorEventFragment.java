@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
@@ -36,6 +37,36 @@ import de.dk_s.babymonitor.monitoring.db.DatabaseEventLoggerContract;
  */
 public class MonitorEventFragment extends Fragment {
 
+    private class LoadInitialRecyclerViewContentTask extends AsyncTask<Void, Void, List<BabyVoiceMonitor.AudioEvent>> {
+
+        @Override
+        protected List<BabyVoiceMonitor.AudioEvent> doInBackground(Void... params) {
+            List<BabyVoiceMonitor.AudioEvent> eventList = null;
+            do {
+                EventHistoryDataProvider eventHistoryDataProvider = getEventHistoryDataProvider();
+                eventList = eventHistoryDataProvider != null ? eventHistoryDataProvider.get24HoursAudioEvents() : null;
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    Log.e(TAG, "Error: Interrupted while loading initial RecyclerViewContent");
+                }
+                if(isCancelled()) {
+                    break;
+                }
+            } while (eventList == null);
+            return eventList;
+        }
+
+        @Override
+        protected void onPostExecute(List<BabyVoiceMonitor.AudioEvent> eventList) {
+            if (myMonitorEventRecyclerViewAdapter != null) {
+                myMonitorEventRecyclerViewAdapter.setContent(eventList);
+                recyclerView.smoothScrollToPosition(0);
+            }
+        }
+    }
+
+
     private static final String TAG = "MonitorEventFragment";
 
     private static final String COLUMN_COUNT = "column-count";
@@ -46,6 +77,8 @@ public class MonitorEventFragment extends Fragment {
     private MyMonitorEventRecyclerViewAdapter myMonitorEventRecyclerViewAdapter = null;
 
     private RecyclerView recyclerView = null;
+
+    private AsyncTask<Void, Void, List<BabyVoiceMonitor.AudioEvent>> lastLoadContentTask = null;
 
     private BroadcastReceiver broadcastReceiver = null;
 
@@ -92,12 +125,8 @@ public class MonitorEventFragment extends Fragment {
     }
 
     private void loadInitialRecyclerViewContent() {
-        EventHistoryDataProvider eventHistoryDataProvider = getEventHistoryDataProvider();
-        List<BabyVoiceMonitor.AudioEvent> eventList = eventHistoryDataProvider != null ? eventHistoryDataProvider.get24HoursAudioEvents() : null;
-        if (myMonitorEventRecyclerViewAdapter != null) {
-            myMonitorEventRecyclerViewAdapter.setContent(eventList);
-            recyclerView.smoothScrollToPosition(0);
-        }
+        lastLoadContentTask = new LoadInitialRecyclerViewContentTask();
+        lastLoadContentTask.execute();
     }
 
     @Override
@@ -119,6 +148,13 @@ public class MonitorEventFragment extends Fragment {
             loadInitialRecyclerViewContent();
         }
         return view;
+    }
+
+    public void onDestroyView() {
+        super.onDestroyView();
+        if(lastLoadContentTask != null) {
+            lastLoadContentTask.cancel(true);
+        }
     }
 
     public EventHistoryDataProvider getEventHistoryDataProvider() {
