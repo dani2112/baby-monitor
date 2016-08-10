@@ -24,6 +24,7 @@ import java.util.List;
 import de.dk_s.babymonitor.ChildActivity;
 import de.dk_s.babymonitor.ParentActivity;
 import de.dk_s.babymonitor.R;
+import de.dk_s.babymonitor.client.InformationClient;
 import de.dk_s.babymonitor.monitoring.AlarmController;
 import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
 import de.dk_s.babymonitor.monitoring.db.DatabaseEventLogger;
@@ -128,11 +129,13 @@ public class MonitorEventFragment extends Fragment {
         remoteDataBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                Log.e(TAG, "RECEIVE");
                 EventHistoryDataProvider eventHistoryDataProvider = getEventHistoryDataProvider();
                 if(eventHistoryDataProvider != null) {
-                    BabyVoiceMonitor.AudioEvent audioEvent = eventHistoryDataProvider.getLastAudioEvent();
-                    if (myMonitorEventRecyclerViewAdapter != null && audioEvent != null) {
-                        myMonitorEventRecyclerViewAdapter.addEventTop(audioEvent);
+                    int newEventCount = intent.getIntExtra("NEW_ELEMENT_COUNT", 1);
+                    List<BabyVoiceMonitor.AudioEvent> eventHistoryList = eventHistoryDataProvider.get24HoursAudioEvents();
+                    if (myMonitorEventRecyclerViewAdapter != null) {
+                        myMonitorEventRecyclerViewAdapter.setContent(eventHistoryList);
                         recyclerView.smoothScrollToPosition(0);
                     }
                 }
@@ -206,6 +209,8 @@ public class MonitorEventFragment extends Fragment {
         super.onStart();
         if(this.getActivity() instanceof ChildActivity) {
             LocalBroadcastManager.getInstance(this.getActivity()).registerReceiver(broadcastReceiver, new IntentFilter(AlarmController.EVENT_DB_UPDATED));
+        } else if (this.getActivity() instanceof  ParentActivity) {
+            LocalBroadcastManager.getInstance(this.getActivity()).registerReceiver(remoteDataBroadcastReceiver, new IntentFilter(InformationClient.EVENT_INFORMATION_UPDATED));
         }
     }
 
@@ -214,6 +219,8 @@ public class MonitorEventFragment extends Fragment {
         super.onStop();
         if(this.getActivity() instanceof ChildActivity) {
             LocalBroadcastManager.getInstance(this.getActivity()).unregisterReceiver(broadcastReceiver);
+        } else if (this.getActivity() instanceof ParentActivity) {
+            LocalBroadcastManager.getInstance(this.getActivity()).unregisterReceiver(remoteDataBroadcastReceiver);
         }
     }
 

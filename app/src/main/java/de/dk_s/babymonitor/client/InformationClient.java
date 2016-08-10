@@ -11,6 +11,7 @@ import java.net.Socket;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -45,6 +46,9 @@ public class InformationClient {
 
     /* Broadcast manager that is needed for broadcasting event list changes */
     private LocalBroadcastManager localBroadcastManager = null;
+
+    /* Last event timestamp */
+    private long lastEventTimestamp = -1;
 
     public InformationClient(String serverAddress, Context context) {
         this.serverAddress = serverAddress;
@@ -94,6 +98,25 @@ public class InformationClient {
                 Thread.sleep(1000);
                 recentAudioEventHistoryDequeue = getRecentAudioEventHistoryRemote();
                 eventHistoryList = getEventHistoryRemote();
+                /* Check if event list update has to be broadcastet */
+                if(eventHistoryList != null && eventHistoryList.size() > 0) {
+                    BabyVoiceMonitor.AudioEvent lastElement = eventHistoryList.get(eventHistoryList.size() - 1);
+                    if(lastElement.getTimeStamp() != lastEventTimestamp) {
+                        int newElementCount = 0;
+                        ListIterator<BabyVoiceMonitor.AudioEvent> iterator = eventHistoryList.listIterator(eventHistoryList.size());
+                        while (iterator.hasPrevious()) {
+                            BabyVoiceMonitor.AudioEvent currentEvent = iterator.previous();
+                            if(currentEvent.getTimeStamp() <= lastEventTimestamp) {
+                                break;
+                            }
+                            newElementCount++;
+                        }
+                        lastEventTimestamp = lastElement.getTimeStamp();
+                        Intent intent = new Intent(EVENT_INFORMATION_UPDATED);
+                        intent.putExtra("NEW_ELEMENT_COUNT", newElementCount);
+                        localBroadcastManager.sendBroadcast(intent);
+                    }
+                }
             } catch (Exception e) {
                 Log.e(TAG, "Error: Exception while receiving information.");
             }
