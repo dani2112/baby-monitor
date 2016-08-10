@@ -100,18 +100,18 @@ public class InformationClient {
                 eventHistoryList = getEventHistoryRemote();
                 /* Check if event list update has to be broadcastet */
                 if(eventHistoryList != null && eventHistoryList.size() > 0) {
-                    BabyVoiceMonitor.AudioEvent lastElement = eventHistoryList.get(eventHistoryList.size() - 1);
-                    if(lastElement.getTimeStamp() != lastEventTimestamp) {
+                    BabyVoiceMonitor.AudioEvent firstElement = eventHistoryList.get(0);
+                    if(firstElement.getTimeStamp() != lastEventTimestamp) {
                         int newElementCount = 0;
-                        ListIterator<BabyVoiceMonitor.AudioEvent> iterator = eventHistoryList.listIterator(eventHistoryList.size());
-                        while (iterator.hasPrevious()) {
-                            BabyVoiceMonitor.AudioEvent currentEvent = iterator.previous();
+                        ListIterator<BabyVoiceMonitor.AudioEvent> iterator = eventHistoryList.listIterator(0);
+                        while (iterator.hasNext()) {
+                            BabyVoiceMonitor.AudioEvent currentEvent = iterator.next();
                             if(currentEvent.getTimeStamp() <= lastEventTimestamp) {
                                 break;
                             }
                             newElementCount++;
                         }
-                        lastEventTimestamp = lastElement.getTimeStamp();
+                        lastEventTimestamp = firstElement.getTimeStamp();
                         Intent intent = new Intent(EVENT_INFORMATION_UPDATED);
                         intent.putExtra("NEW_ELEMENT_COUNT", newElementCount);
                         localBroadcastManager.sendBroadcast(intent);
