@@ -112,7 +112,7 @@ public class BabyVoiceMonitor extends Observable implements Observer {
 
     /**
      * Processes audio, generates audio event history and informs about changes
-     * Audio Event Codes: 0=No alarm active, 1=alarm activated, 2=alarm still active
+     * Audio Event Codes: 0=No alarm active, 1=alarm activated, 2=alarm still active, 3=alarm disabled
      */
     private void processAudioElements() {
         while (isStarted) {

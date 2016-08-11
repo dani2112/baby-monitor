@@ -129,7 +129,6 @@ public class MonitorEventFragment extends Fragment {
         remoteDataBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Log.e(TAG, "RECEIVE");
                 EventHistoryDataProvider eventHistoryDataProvider = getEventHistoryDataProvider();
                 if(eventHistoryDataProvider != null) {
                     int newEventCount = intent.getIntExtra("NEW_ELEMENT_COUNT", 1);

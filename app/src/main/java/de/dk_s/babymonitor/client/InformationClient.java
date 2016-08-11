@@ -119,10 +119,16 @@ public class InformationClient {
     }
 
     private void updateNotificationIfNecessary() {
-        if(true) {
+        BabyVoiceMonitor.AudioEvent lastEvent = eventHistoryList.get(0);
+        if(lastEvent.getEventType() == 1 || lastEvent.getEventType() == 2) {
             if(context instanceof ConnectionService) {
                 ConnectionService connectionService = (ConnectionService)context;
-                connectionService.updateNotification("Test", "1234");
+                connectionService.updateNotification("Alarm!", "Das Baby schreit!");
+            }
+        } else {
+            if(context instanceof  ConnectionService) {
+                ConnectionService connectionService = (ConnectionService)context;
+                connectionService.updateNotification("Alles Ruhig...", "Kein Alarm ist aktiv.");
             }
         }
     }
