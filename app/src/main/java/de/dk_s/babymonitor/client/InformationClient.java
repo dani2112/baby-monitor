@@ -3,6 +3,9 @@ package de.dk_s.babymonitor.client;
 
 import android.content.Context;
 import android.content.Intent;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -49,6 +52,8 @@ public class InformationClient {
 
     /* Last event timestamp */
     private long lastEventTimestamp = -1;
+
+
 
     public InformationClient(String serverAddress, Context context) {
         this.serverAddress = serverAddress;
@@ -100,6 +105,7 @@ public class InformationClient {
                 eventHistoryList = getEventHistoryRemote();
                 broadcastInformationUpdateIfNecessary();
                 updateNotificationIfNecessary();
+                playAlarmIfNecessary();
             } catch (Exception e) {
                 Log.e(TAG, "Error: Exception while receiving information.");
             }
@@ -116,6 +122,15 @@ public class InformationClient {
             connectionSucessful = false;
         }
         return connectionSucessful ? socket : null;
+    }
+
+    private void playAlarmIfNecessary() {
+        BabyVoiceMonitor.AudioEvent lastEvent = eventHistoryList.get(0);
+        if(lastEvent.getEventType() == 1 || lastEvent.getEventType() == 2) {
+            AlarmSoundPlayer.playAlarm(context);
+        } else {
+            AlarmSoundPlayer.stopAlarm();
+        }
     }
 
     private void updateNotificationIfNecessary() {
