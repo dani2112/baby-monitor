@@ -98,25 +98,8 @@ public class InformationClient {
                 Thread.sleep(1000);
                 recentAudioEventHistoryDequeue = getRecentAudioEventHistoryRemote();
                 eventHistoryList = getEventHistoryRemote();
-                /* Check if event list update has to be broadcastet */
-                if(eventHistoryList != null && eventHistoryList.size() > 0) {
-                    BabyVoiceMonitor.AudioEvent firstElement = eventHistoryList.get(0);
-                    if(firstElement.getTimeStamp() != lastEventTimestamp) {
-                        int newElementCount = 0;
-                        ListIterator<BabyVoiceMonitor.AudioEvent> iterator = eventHistoryList.listIterator(0);
-                        while (iterator.hasNext()) {
-                            BabyVoiceMonitor.AudioEvent currentEvent = iterator.next();
-                            if(currentEvent.getTimeStamp() <= lastEventTimestamp) {
-                                break;
-                            }
-                            newElementCount++;
-                        }
-                        lastEventTimestamp = firstElement.getTimeStamp();
-                        Intent intent = new Intent(EVENT_INFORMATION_UPDATED);
-                        intent.putExtra("NEW_ELEMENT_COUNT", newElementCount);
-                        localBroadcastManager.sendBroadcast(intent);
-                    }
-                }
+                broadcastInformationUpdateIfNecessary();
+                updateNotificationIfNecessary();
             } catch (Exception e) {
                 Log.e(TAG, "Error: Exception while receiving information.");
             }
@@ -133,6 +116,37 @@ public class InformationClient {
             connectionSucessful = false;
         }
         return connectionSucessful ? socket : null;
+    }
+
+    private void updateNotificationIfNecessary() {
+        if(true) {
+            if(context instanceof ConnectionService) {
+                ConnectionService connectionService = (ConnectionService)context;
+                connectionService.updateNotification("Test", "1234");
+            }
+        }
+    }
+
+    private void broadcastInformationUpdateIfNecessary() {
+         /* Check if event list update has to be broadcastet */
+        if(eventHistoryList != null && eventHistoryList.size() > 0) {
+            BabyVoiceMonitor.AudioEvent firstElement = eventHistoryList.get(0);
+            if(firstElement.getTimeStamp() != lastEventTimestamp) {
+                int newElementCount = 0;
+                ListIterator<BabyVoiceMonitor.AudioEvent> iterator = eventHistoryList.listIterator(0);
+                while (iterator.hasNext()) {
+                    BabyVoiceMonitor.AudioEvent currentEvent = iterator.next();
+                    if(currentEvent.getTimeStamp() <= lastEventTimestamp) {
+                        break;
+                    }
+                    newElementCount++;
+                }
+                lastEventTimestamp = firstElement.getTimeStamp();
+                Intent intent = new Intent(EVENT_INFORMATION_UPDATED);
+                intent.putExtra("NEW_ELEMENT_COUNT", newElementCount);
+                localBroadcastManager.sendBroadcast(intent);
+            }
+        }
     }
 
     private Deque<BabyVoiceMonitor.AudioEvent> getRecentAudioEventHistoryRemote() {

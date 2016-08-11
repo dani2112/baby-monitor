@@ -1,22 +1,23 @@
 package de.dk_s.babymonitor.client;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.support.v7.app.NotificationCompat;
 import android.widget.Toast;
 
 import java.util.Deque;
 import java.util.List;
 
-import de.dk_s.babymonitor.communication.information.InformationServer;
+import de.dk_s.babymonitor.ParentActivity;
+import de.dk_s.babymonitor.R;
 import de.dk_s.babymonitor.gui.eventlist.EventHistoryDataProvider;
-import de.dk_s.babymonitor.monitoring.AlarmController;
 import de.dk_s.babymonitor.monitoring.AudioEventHistoryDataProvider;
 import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
-import de.dk_s.babymonitor.monitoring.MicRecorder;
-import de.dk_s.babymonitor.monitoring.MonitoringService;
-import de.dk_s.babymonitor.monitoring.db.DatabaseEventLogger;
 
 public class ConnectionService extends Service implements AudioEventHistoryDataProvider, EventHistoryDataProvider {
 
@@ -34,6 +35,10 @@ public class ConnectionService extends Service implements AudioEventHistoryDataP
 
     private InformationClient informationClient = null;
 
+    private int notificationID = 1;
+
+    NotificationCompat.Builder notificationBuilder = null;
+
     public ConnectionService() {
     }
 
@@ -50,6 +55,7 @@ public class ConnectionService extends Service implements AudioEventHistoryDataP
     public void onDestroy() {
         Toast.makeText(this, "connection service destroyed", Toast.LENGTH_SHORT).show();
         isStarted = false;
+        disableServiceNotification();
         informationClient.stopClient();
     }
 
@@ -62,6 +68,7 @@ public class ConnectionService extends Service implements AudioEventHistoryDataP
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "connection service starting", Toast.LENGTH_SHORT).show();
         isStarted = true;
+        enableServiceNotification();
         informationClient = new InformationClient("127.0.0.1", this);
         informationClient.startClient();
         return START_STICKY;    // restart service if it is killed by system and resources become available
@@ -88,6 +95,39 @@ public class ConnectionService extends Service implements AudioEventHistoryDataP
             }
         } else {
             return null;
+        }
+    }
+
+
+    private void enableServiceNotification() {
+        notificationBuilder = new NotificationCompat.Builder(this);
+
+        notificationBuilder.setSmallIcon(R.drawable.round_button);
+        notificationBuilder.setContentTitle("Babymonitor Status");
+        notificationBuilder.setContentText("Babymonitor Status Details");
+        notificationBuilder.setOngoing(true); // Make it uncancellable for the user
+        Intent notificationIntent = new Intent(this, ParentActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this,
+                0, notificationIntent,
+                0);
+        notificationBuilder.setContentIntent(contentIntent);
+
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(notificationID, notificationBuilder.build());
+    }
+
+    private void  disableServiceNotification() {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancel(notificationID);
+    }
+
+    public void updateNotification(String statusTitle, String statusMessage) {
+        if(notificationBuilder != null) {
+            notificationBuilder.setContentTitle(statusTitle);
+            notificationBuilder.setContentText(statusMessage);
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.notify(notificationID, notificationBuilder.build());
         }
     }
 }
