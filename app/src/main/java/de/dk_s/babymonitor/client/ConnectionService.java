@@ -1,5 +1,6 @@
 package de.dk_s.babymonitor.client;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -111,6 +112,7 @@ public class ConnectionService extends Service implements AudioEventHistoryDataP
                 0, notificationIntent,
                 0);
         notificationBuilder.setContentIntent(contentIntent);
+        notificationBuilder.setPriority(Notification.PRIORITY_MAX);
 
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
