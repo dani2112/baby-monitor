@@ -1,27 +1,17 @@
 package de.dk_s.babymonitor;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-
-import de.dk_s.babymonitor.monitoring.BabyVoiceMonitor;
-import de.dk_s.babymonitor.monitoring.MicRecorder;
-import de.dk_s.babymonitor.monitoring.SoundServer;
+import android.view.View;
+import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-
-    private MicRecorder micRecorder;
-
-    private SoundServer soundServer;
-
-    private BabyVoiceMonitor babyVoiceMonitor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,23 +20,24 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        final Button parentButton = (Button) findViewById(R.id.parentButton);
+        parentButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, ParentActivity.class);
+                startActivity(intent);
             }
         });
 
-        micRecorder = new MicRecorder();
-        micRecorder.startRecording();
+        final Button childButton = (Button) findViewById((R.id.childButton));
+        childButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, ChildActivity.class);
+                startActivity(intent);
+            }
+        });
 
-        babyVoiceMonitor = new BabyVoiceMonitor(micRecorder);
-        babyVoiceMonitor.startMonitoring();
-
-//        soundServer = new SoundServer(micRecorder);
-//        soundServer.startServer();
     }
 
     @Override

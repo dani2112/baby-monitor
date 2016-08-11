@@ -1,4 +1,4 @@
-package de.dk_s.babymonitor.monitoring;
+package de.dk_s.babymonitor.communication;
 
 import android.util.Log;
 
@@ -12,6 +12,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import de.dk_s.babymonitor.monitoring.MicRecorder;
 
 /**
  * Class that streams sound data over websockets
@@ -68,7 +70,7 @@ public class SoundServer {
                     Map.Entry<Integer, SoundServerClient> entry = iterator.next();
                     SoundServerClient currentClient = entry.getValue();
                     Log.e(TAG, String.valueOf(currentClient.isConnected()));
-                    if(!currentClient.isConnected()){
+                    if (!currentClient.isConnected()) {
                         currentClient.stopCommunication();
                         micRecorder.deleteObserver(currentClient);
                         iterator.remove();

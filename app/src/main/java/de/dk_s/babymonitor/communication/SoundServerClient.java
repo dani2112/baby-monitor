@@ -1,7 +1,6 @@
-package de.dk_s.babymonitor.monitoring;
+package de.dk_s.babymonitor.communication;
 
 
-import android.provider.MediaStore;
 import android.util.Log;
 
 import java.io.IOException;
@@ -12,6 +11,8 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import de.dk_s.babymonitor.monitoring.MicRecorder;
 
 public class SoundServerClient implements Runnable, Observer {
 
@@ -63,13 +64,13 @@ public class SoundServerClient implements Runnable, Observer {
             e.printStackTrace();
         }
 
-        boolean isWsConnection = WsCommunicationHelper.handleWsHandshake(inputStream, outputStream);
+        boolean isWsConnection = WsCommunicationHelper.handleWsHandshakeServer(inputStream, outputStream);
 
         Log.e(TAG, "Running");
         while (isRunning) {
             try {
                 MicRecorder.AudioChunk currentChunk = audioChunksQueue.take();
-                WsCommunicationHelper.sendData(130, currentChunk.getChunkData8Bit(), outputStream);
+                WsCommunicationHelper.sendDataServer(130, currentChunk.getChunkData8Bit(), outputStream);
             } catch (InterruptedException e) {
                 Log.e(TAG, "Error: Exception while sending audio data. Maybe threadwas shutdown.");
             }
@@ -79,7 +80,7 @@ public class SoundServerClient implements Runnable, Observer {
 
     @Override
     public void update(Observable observable, Object data) {
-        MicRecorder.AudioChunk audioChunk = (MicRecorder.AudioChunk)data;
+        MicRecorder.AudioChunk audioChunk = (MicRecorder.AudioChunk) data;
         if (audioChunksQueue.size() < maxQueueSize) {
             audioChunksQueue.add(audioChunk);
         } else {

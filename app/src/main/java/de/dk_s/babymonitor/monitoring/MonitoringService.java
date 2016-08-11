@@ -1,99 +1,92 @@
 package de.dk_s.babymonitor.monitoring;
 
-import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioRecord;
-import android.media.AudioTrack;
-import android.media.MediaRecorder;
-import android.net.rtp.AudioGroup;
-import android.net.rtp.AudioStream;
-import android.net.rtp.RtpStream;
-import android.util.Log;
+import android.app.Service;
+import android.content.Intent;
+import android.os.Binder;
+import android.os.IBinder;
+import android.widget.Toast;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.Enumeration;
+import java.util.Deque;
 
-public class MonitoringService {
+import de.dk_s.babymonitor.communication.information.InformationServer;
+import de.dk_s.babymonitor.monitoring.db.DatabaseEventLogger;
+
+public class MonitoringService extends Service implements AudioEventHistoryDataProvider {
+
+    public class MonitoringServiceBinder extends Binder {
+        public MonitoringService getService() {
+            return MonitoringService.this;
+        }
+    }
 
     private static final String TAG = "MonitoringService";
 
-    private AudioRecord audioRecord;
+    private final IBinder binder = new MonitoringServiceBinder();
 
-    private short[] recordingBuffer;
+    private boolean isStarted = false;
 
-    private short processingBuffers[][];
+    private MicRecorder micRecorder = null;
+
+    private BabyVoiceMonitor babyVoiceMonitor = null;
+
+    private AlarmController alarmController = null;
+
+    private InformationServer informationServer = null;
+
+    public MonitoringService() {
+    }
+
+    public boolean isStarted() {
+        return isStarted;
+    }
+
+    @Override
+    public void onCreate() {
+        Toast.makeText(this, "service created", Toast.LENGTH_SHORT).show();
+        isStarted = false;
+    }
+
+    public void onDestroy() {
+        Toast.makeText(this, "service destroyed", Toast.LENGTH_SHORT).show();
+        babyVoiceMonitor.stopMonitoring();
+        micRecorder.stopRecording();
+        alarmController.disableAlarmController();
+        informationServer.stopServer();
+        isStarted = false;
+    }
 
 
-    public void startMonitoring() {
-        int minBufferSize = AudioRecord.getMinBufferSize(44100, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
-        int usedBufferSize = minBufferSize * 100;
-        recordingBuffer = new short[usedBufferSize];
-        processingBuffers = new short[20][20480];
-        Log.e(TAG, String.valueOf(minBufferSize));
-        audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, 44100, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, usedBufferSize);
-        audioRecord.startRecording();
+    @Override
+    public IBinder onBind(Intent intent) {
+        return binder;
+    }
 
-        int i = 0;
-        while(i<20) {
-            audioRecord.read(processingBuffers[i], 0, processingBuffers[i].length);
-        i++;
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
+        isStarted = true;
+        if (micRecorder == null) {
+            micRecorder = new MicRecorder();
         }
-
-        audioRecord.stop();
-
-
-        final AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, 44100, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, 20480, AudioTrack.MODE_STREAM);
-        audioTrack.play();
-
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-//                try {
-//                    AudioStream stream = new AudioStream(InetAddress.getByName(getLocalIpAddress()));
-//                    AudioGroup audioGroup = new AudioGroup();
-//                    stream.join(audioGroup);
-//                } catch (SocketException e) {
-//                    e.printStackTrace();
-//                } catch (UnknownHostException e) {
-//                    e.printStackTrace();
-//                }
-                int i2 = 0;
-                Log.e(TAG, "PLAY");
-                while(i2 < 20) {
-                    Log.e(TAG, String.valueOf(processingBuffers[i2][0]));
-                    audioTrack.write(processingBuffers[i2], 0, processingBuffers[i2].length);
-                    i2++;
-                }
-            }
-        });
-        t.start();
-
-    }
-
-    public void stopMonitoring() {
-
-    }
-
-
-    public String getLocalIpAddress() {
-        try {
-            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
-                NetworkInterface intf = en.nextElement();
-                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
-                    InetAddress inetAddress = enumIpAddr.nextElement();
-                    if (!inetAddress.isLoopbackAddress()) {
-                        return inetAddress.getHostAddress();
-                    }
-                }
-            }
-        } catch (SocketException ex) {
-            Log.e(TAG, ex.toString());
+        if (babyVoiceMonitor == null) {
+            babyVoiceMonitor = new BabyVoiceMonitor(micRecorder);
         }
-        return null;
+        if (alarmController == null) {
+            alarmController = new AlarmController(babyVoiceMonitor, new DatabaseEventLogger(getApplicationContext()), getApplicationContext());
+        }
+        if (informationServer == null) {
+            informationServer = new InformationServer(babyVoiceMonitor, this);
+        }
+        micRecorder.startRecording();
+        babyVoiceMonitor.startMonitoring();
+        alarmController.enableAlarmController();
+        informationServer.startServer();
+        return START_STICKY;    // restart service if it is killed by system and resources become available
     }
 
+    @Override
+    public Deque<BabyVoiceMonitor.AudioEvent> getRecentAudioEvents() {
+        return babyVoiceMonitor == null ? null : babyVoiceMonitor.getRecentAudioEventList();
+    }
 
 }
